@@ -27,3 +27,27 @@ export interface JwtResponse {
     firstName: string;
     lastName: string;
 }
+
+export interface OwnerCancellationRequest {
+    cancellationDate: string;  // ISO date string
+}
+
+export interface Reservation {
+    id?: number;
+    parkingSpaceId: number;
+    spotNumber?: number;
+    reservationDate: string;  // ISO date string
+    status?: string;
+}
+
+export interface ParkingSpace {
+    id: number;
+    parkingType: string;
+    spotNumber: number;
+    status: string;  // 'available', 'occupied', 'my-reservation', 'owner-cancelled'
+}
+
+export interface ReservationRequest {
+    parkingSpaceId: number;
+    reservationDate: string;  // ISO date string
+}
