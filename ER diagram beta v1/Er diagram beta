@@ -1,0 +1,31 @@
+USERS (employees)
+----------------
+id (PK)
+email
+password_hash
+full_name
+has_yard_parking (boolean)
+has_garage_card (boolean)
+
+PARKING_SPOTS
+----------------
+id (PK)
+type (YARD | GARAGE)
+owner_user_id (FK users.id)
+
+ABSENCES
+----------------
+id (PK)
+parking_spot_id (FK)
+date_from
+date_to
+created_at
+
+RESERVATIONS
+----------------
+id (PK)
+parking_spot_id (FK)
+reserved_by_user_id (FK)
+reservation_date
+created_at
+status (ACTIVE | CANCELLED | AUTO_RELEASED | EXPIRED)
