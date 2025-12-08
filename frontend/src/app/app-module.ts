@@ -9,6 +9,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BookingComponent } from './components/booking/booking.component';
+import { OwnerComponent } from './components/owner/owner.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 
 @NgModule({
@@ -17,7 +18,8 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
         LoginComponent,
         RegisterComponent,
         DashboardComponent,
-        BookingComponent
+        BookingComponent,
+        OwnerComponent
     ],
     imports: [
         BrowserModule,

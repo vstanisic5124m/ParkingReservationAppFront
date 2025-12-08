@@ -1,0 +1,84 @@
+<div class="owner-container">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h1>🚗 Parking Reservation System - Owner Portal</h1>
+        </div>
+        <div class="navbar-user">
+            <span class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }} (Owner)</span>
+            <button class="btn btn-logout" (click)="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="owner-content">
+        <div class="welcome-card">
+            <h2>Cancel Parking Spot Availability</h2>
+            <p>As a parking space owner, you can cancel the availability of your parking spot for future dates.</p>
+
+            <div class="info-box">
+                <h4>⏰ Important Rules:</h4>
+                <ul>
+                    <li>You cannot cancel availability for today</li>
+                    <li *ngIf="isAfter5PM()" class="highlight">⚠️ It's after 5:00 PM - You cannot cancel for tomorrow, only day after tomorrow and beyond</li>
+                    <li *ngIf="!isAfter5PM()">✅ You can cancel availability starting from tomorrow</li>
+                    <li>Current time: {{ getCurrentTime() }}</li>
+                </ul>
+            </div>
+
+            <div class="your-space">
+                <h4>Your Parking Space:</h4>
+                <p><strong>Space ID:</strong> {{ currentUser?.ownedParkingSpaceId || 'Not assigned' }}</p>
+            </div>
+        </div>
+
+        <div class="cancellation-form">
+            <h3>Select Date to Cancel</h3>
+
+            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+            <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+
+            <div class="form-group">
+                <label for="cancellationDate">Cancellation Date:</label>
+                <input
+                        type="date"
+                        id="cancellationDate"
+                        [min]="minDate"
+                        [value]="formatDate(selectedDate)"
+                        (change)="onDateChange($event)"
+                        class="date-input"
+                />
+                <p class="help-text">Minimum date: {{ minDate }}</p>
+            </div>
+
+            <button class="btn btn-danger" (click)="cancelAvailability()">
+                Cancel Availability for {{ formatDate(selectedDate) }}
+            </button>
+
+            <div class="calendar-note">
+                <h4>📅 How it works:</h4>
+                <p>When you cancel availability for a specific date:</p>
+                <ul>
+                    <li>Your parking spot will not be available for booking on that date</li>
+                    <li>Any existing reservations for that date will need to be handled separately</li>
+                    <li>Users will see your spot as "Owner Cancelled" on the calendar</li>
+                    <li>You will receive an email confirmation (coming soon)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Popup -->
+    <div *ngIf="showConfirmPopup" class="popup-overlay" (click)="closePopup()">
+        <div class="popup-content" (click)="$event.stopPropagation()">
+            <h3>⚠️ Confirm Cancellation</h3>
+            <p>Are you sure you want to cancel the availability of your parking spot?</p>
+            <p><strong>Date:</strong> {{ formatDate(selectedDate) }}</p>
+            <p><strong>Your Space ID:</strong> {{ currentUser?.ownedParkingSpaceId }}</p>
+            <p class="warning-text">This action will prevent users from booking your spot on this date.</p>
+            <div class="popup-actions">
+                <button class="btn btn-danger" (click)="confirmCancel()">Yes, Cancel Availability</button>
+                <button class="btn btn-secondary" (click)="closePopup()">No, Keep Available</button>
+            </div>
+            <p class="popup-note">📧 You will receive an email confirmation</p>
+        </div>
+    </div>
+</div>
