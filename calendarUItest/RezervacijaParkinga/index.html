@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkbox Calendar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="calendar-header">
+        <button id="prevMonth">← Претходни</button>
+        <h2 id="monthTitle"></h2>
+        <button id="nextMonth">Следећи →</button>
+    </div>
+
+    <div class="calendar-container" id="calendarContainer">
+        <!-- Calendar will be generated here by JavaScript -->
+    </div>
+    
+    <div class="selection-summary">
+        <p id="selectedDaysList"></p>
+        <!-- 2. Дугме за брисање свих селекција -->
+        <button id="clearSelections" style="display: none;">Обриши све селекције</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

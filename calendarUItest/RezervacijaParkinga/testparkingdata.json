@@ -1,0 +1,21 @@
+[
+    {"dan": "2025-12-08", "tip_parkinga": "dvoriste", "parking_mesto_broj": 1},
+    {"dan": "2025-12-08", "tip_parkinga": "dvoriste", "parking_mesto_broj": 5},
+    {"dan": "2025-12-08", "tip_parkinga": "dvoriste", "parking_mesto_broj": 10},
+    {"dan": "2025-12-08", "tip_parkinga": "dvoriste", "parking_mesto_broj": 11},
+    {"dan": "2025-12-08", "tip_parkinga": "dvoriste", "parking_mesto_broj": 49},
+    {"dan": "2025-12-08", "tip_parkinga": "garaza", "parking_mesto_broj": 15},
+    {"dan": "2025-12-08", "tip_parkinga": "garaza", "parking_mesto_broj": 16},
+    {"dan": "2025-12-08", "tip_parkinga": "garaza", "parking_mesto_broj": 17},
+    {"dan": "2025-12-08", "tip_parkinga": "garaza", "parking_mesto_broj": 88},
+    {"dan": "2025-12-08", "tip_parkinga": "garaza", "parking_mesto_broj": 89},
+
+    {"dan": "2025-12-09", "tip_parkinga": "dvoriste", "parking_mesto_broj": 2},
+    {"dan": "2025-12-09", "tip_parkinga": "dvoriste", "parking_mesto_broj": 3},
+    {"dan": "2025-12-09", "tip_parkinga": "garaza", "parking_mesto_broj": 2},
+    {"dan": "2025-12-09", "tip_parkinga": "garaza", "parking_mesto_broj": 22},
+
+    {"dan": "2025-12-10", "tip_parkinga": "dvoriste", "parking_mesto_broj": 3},
+    {"dan": "2025-12-10", "tip_parkinga": "garaza", "parking_mesto_broj": 3},
+    {"dan": "2025-12-10", "tip_parkinga": "garaza", "parking_mesto_broj": 33}
+]
