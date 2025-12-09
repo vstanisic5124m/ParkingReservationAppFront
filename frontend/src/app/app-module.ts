@@ -1,5 +1,6 @@
 import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
@@ -23,6 +24,7 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     ],
     imports: [
         BrowserModule,
+        CommonModule,
         AppRoutingModule,
         ReactiveFormsModule
     ],
