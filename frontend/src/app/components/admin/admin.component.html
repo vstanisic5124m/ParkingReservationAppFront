@@ -1,0 +1,125 @@
+<mat-card>
+    <mat-card-title>Admin Dashboard</mat-card-title>
+    <mat-card-content>
+        <section class="table-section">
+            <h3>Users</h3>
+            <div class="controls">
+                <mat-form-field appearance="outline" class="search-field">
+                    <mat-label>Search users</mat-label>
+                    <input matInput [formControl]="usersSearch" placeholder="email or name">
+                    <button mat-icon-button matSuffix *ngIf="usersSearch.value" (click)="usersSearch.setValue('')">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
+            </div>
+
+            <div class="table-wrapper">
+                <mat-table [dataSource]="usersDataSource" matSort #usersSort="matSort" class="mat-elevation-z8">
+
+                    <ng-container matColumnDef="id">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> ID </mat-header-cell>
+                        <mat-cell *matCellDef="let u"> {{u.id}} </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="email">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> Email </mat-header-cell>
+                        <mat-cell *matCellDef="let u"> {{u.email}} </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="name">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> Name </mat-header-cell>
+                        <mat-cell *matCellDef="let u"> {{u.name}} </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="isAdmin">
+                        <mat-header-cell *matHeaderCellDef> Admin </mat-header-cell>
+                        <mat-cell *matCellDef="let u">
+                            <button mat-icon-button color="primary" (click)="onToggleAdmin(u)">
+                                <mat-icon>{{ u.isAdmin ? 'verified' : 'person_outline' }}</mat-icon>
+                            </button>
+                        </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="actions">
+                        <mat-header-cell *matHeaderCellDef> Actions </mat-header-cell>
+                        <mat-cell *matCellDef="let u">
+                            <button mat-button color="warn" (click)="onDeleteUser(u)">Delete</button>
+                        </mat-cell>
+                    </ng-container>
+
+                    <mat-header-row *matHeaderRowDef="usersDisplayedColumns"></mat-header-row>
+                    <mat-row *matRowDef="let row; columns: usersDisplayedColumns;"></mat-row>
+                </mat-table>
+
+                <mat-paginator #usersPaginator
+                               [length]="usersTotal"
+                               [pageSize]="usersPageSize"
+                               [pageIndex]="usersPageIndex"
+                               [pageSizeOptions]="[5,10,25,50]"
+                               (page)="onUsersPage($event)">
+                </mat-paginator>
+            </div>
+        </section>
+
+        <section class="table-section">
+            <h3>Reservations</h3>
+            <div class="controls">
+                <mat-form-field appearance="outline" class="search-field">
+                    <mat-label>Search reservations</mat-label>
+                    <input matInput [formControl]="reservationsSearch" placeholder="user email or spot">
+                    <button mat-icon-button matSuffix *ngIf="reservationsSearch.value" (click)="reservationsSearch.setValue('')">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
+            </div>
+
+            <div class="table-wrapper">
+                <mat-table [dataSource]="reservationsDataSource" matSort #reservationsSort="matSort" class="mat-elevation-z8">
+
+                    <ng-container matColumnDef="id">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> ID </mat-header-cell>
+                        <mat-cell *matCellDef="let r"> {{r.id}} </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="userEmail">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> User </mat-header-cell>
+                        <mat-cell *matCellDef="let r"> {{r.userEmail}} </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="spot">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> Spot </mat-header-cell>
+                        <mat-cell *matCellDef="let r"> {{r.spot}} </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="start">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> From </mat-header-cell>
+                        <mat-cell *matCellDef="let r"> {{r.start | date:'short'}} </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="end">
+                        <mat-header-cell *matHeaderCellDef mat-sort-header> To </mat-header-cell>
+                        <mat-cell *matCellDef="let r"> {{r.end | date:'short'}} </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="actions">
+                        <mat-header-cell *matHeaderCellDef> Actions </mat-header-cell>
+                        <mat-cell *matCellDef="let r">
+                            <button mat-button color="warn" (click)="onCancelReservation(r)">Cancel</button>
+                        </mat-cell>
+                    </ng-container>
+
+                    <mat-header-row *matHeaderRowDef="reservationsDisplayedColumns"></mat-header-row>
+                    <mat-row *matRowDef="let row; columns: reservationsDisplayedColumns;"></mat-row>
+                </mat-table>
+
+                <mat-paginator #reservationsPaginator
+                               [length]="reservationsTotal"
+                               [pageSize]="reservationsPageSize"
+                               [pageIndex]="reservationsPageIndex"
+                               [pageSizeOptions]="[5,10,25,50]"
+                               (page)="onReservationsPage($event)">
+                </mat-paginator>
+            </div>
+        </section>
+    </mat-card-content>
+</mat-card>
