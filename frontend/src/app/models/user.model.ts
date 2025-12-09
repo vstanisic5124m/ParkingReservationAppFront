@@ -4,6 +4,8 @@ export interface User {
     firstName: string;
     lastName: string;
     phoneNumber?: string;
+    isAdmin?: boolean;
+    roles?: string[];
 }
 
 export interface LoginRequest {

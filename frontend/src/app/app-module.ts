@@ -12,6 +12,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BookingComponent } from './components/booking/booking.component';
 import { OwnerComponent } from './components/owner/owner.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import {AdminComponent} from "./components/admin/admin.component";
 
 @NgModule({
     declarations: [
@@ -20,7 +21,8 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
         RegisterComponent,
         DashboardComponent,
         BookingComponent,
-        OwnerComponent
+        OwnerComponent,
+        AdminComponent
     ],
     imports: [
         BrowserModule,
