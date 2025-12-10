@@ -15,6 +15,10 @@ export class ParkingService {
         return this.http.get<ParkingSpace[]>(`${this.apiUrl}/parking/spaces?date=${date}`);
     }
 
+    getMyReservations(): Observable<Reservation[]> {
+        return this.http.get<Reservation[]>(`${this.apiUrl}/reservations/my-reservations`);
+    }
+
     createReservation(request: ReservationRequest): Observable<Reservation> {
         return this.http.post<Reservation>(`${this.apiUrl}/reservations`, request);
     }

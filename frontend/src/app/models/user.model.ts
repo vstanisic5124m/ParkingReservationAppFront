@@ -3,6 +3,7 @@ export interface User {
     email: string;
     firstName: string;
     lastName: string;
+    parkingType?: string;
     phoneNumber?: string;
     isAdmin?: boolean;
     roles?: string[];
@@ -28,6 +29,8 @@ export interface JwtResponse {
     email: string;
     firstName: string;
     lastName: string;
+    role: string;
+    ownedParkingSpaceId?: number;
 }
 
 export interface OwnerCancellationRequest {

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ParkingService } from '../../services/parking.service';
-import { JwtResponse, ParkingSpace, ReservationRequest } from '../../models/user.model';
+import { JwtResponse, ParkingSpace, Reservation, ReservationRequest } from '../../models/user.model';
 
 @Component({
     selector: 'app-booking',
@@ -16,6 +16,7 @@ export class BookingComponent implements OnInit {
     parkingSpaces: ParkingSpace[] = [];
     yardSpaces: ParkingSpace[] = [];
     garageSpaces: ParkingSpace[] = [];
+    myReservations: Reservation[] = [];
     loading = false;
     error = '';
     showBookingPopup = false;
@@ -36,9 +37,21 @@ export class BookingComponent implements OnInit {
             this.router.navigate(['/owner']);
             return;
         }
-
+        this.loadMyReservations();
         this.loadParkingSpaces();
     }
+
+    loadMyReservations(): void {
+        this.parkingService.getMyReservations().subscribe({
+            next: (reservations) => {
+                this.myReservations = reservations;
+            },
+            error: (error) => {
+                console.error('Failed to load reservations:', error);
+            }
+        });
+    }
+
 
     loadParkingSpaces(): void {
         this.loading = true;
@@ -94,6 +107,7 @@ export class BookingComponent implements OnInit {
             next: () => {
                 this.showBookingPopup = false;
                 alert('Parking space booked successfully! (Email notification will be sent)');
+                this.loadMyReservations();
                 this.loadParkingSpaces();
             },
             error: (error) => {
@@ -108,8 +122,32 @@ export class BookingComponent implements OnInit {
 
         // Find the reservation ID - in a real app, we'd fetch this from the backend
         // For now, we'll need to add a way to track reservation IDs
-        alert('Cancel functionality requires reservation ID. Please implement getMyReservations endpoint.');
-        this.showCancelPopup = false;
+      //  alert('Cancel functionality requires reservation ID. Please implement getMyReservations endpoint.');
+    //    this.showCancelPopup = false;
+        // Find the reservation for this space on the selected date
+        const reservation = this.myReservations.find(r =>
+            r.parkingSpaceId === this.selectedSpace!.id &&
+            r.reservationDate === this.formatDate(this.selectedDate)
+        );
+
+        if (!reservation || !reservation.id) {
+            alert('Reservation not found');
+            this.showCancelPopup = false;
+            return;
+        }
+
+        this.parkingService.cancelReservation(reservation.id).subscribe({
+            next: () => {
+                this.showCancelPopup = false;
+                alert('Reservation cancelled successfully!');
+                this.loadMyReservations();
+                this.loadParkingSpaces();
+            },
+            error: (error) => {
+                this.showCancelPopup = false;
+                alert(error.error?.message || 'Failed to cancel reservation');
+            }
+        });
     }
 
     closePopup(): void {
