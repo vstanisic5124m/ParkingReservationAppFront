@@ -10,6 +10,39 @@
     </nav>
 
     <div class="booking-content">
+        <!-- My Reservations Section -->
+        <div class="my-reservations-section">
+            <h2>My Active Reservations</h2>
+            <div *ngIf="myReservations.length === 0" class="no-reservations">
+                <p>You have no active reservations.</p>
+            </div>
+            <div *ngIf="myReservations.length > 0" class="reservations-list">
+                <div *ngFor="let reservation of myReservations" class="reservation-card">
+                    <div class="reservation-info">
+                        <div class="reservation-detail">
+                            <span class="label">Spot:</span>
+                            <span class="value">#{{ reservation.spotNumber }}</span>
+                        </div>
+                        <div class="reservation-detail">
+                            <span class="label">Type:</span>
+                            <span class="value">{{ reservation.parkingType }}</span>
+                        </div>
+                        <div class="reservation-detail">
+                            <span class="label">Date:</span>
+                            <span class="value">{{ normalizeDate(reservation.reservationDate) }}</span>
+                        </div>
+                    </div>
+                    <button
+                            class="btn btn-cancel-small"
+                            (click)="cancelReservationFromList(reservation)"
+                            [disabled]="cancellingReservation"
+                    >
+                        {{ cancellingReservation ? 'Cancelling...' : 'Cancel' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="date-selector">
             <h2>Select Date</h2>
             <input
@@ -109,8 +142,10 @@
             <p>Do you want to cancel your reservation for parking space #{{ selectedSpace?.spotNumber }}?</p>
             <p><strong>Date:</strong> {{ formatDate(selectedDate) }}</p>
             <div class="popup-actions">
-                <button class="btn btn-danger" (click)="confirmCancel()">Yes, Cancel It</button>
-                <button class="btn btn-secondary" (click)="closePopup()">Keep Reservation</button>
+                <button class="btn btn-danger" (click)="confirmCancel()" [disabled]="cancellingReservation">
+                    {{ cancellingReservation ? 'Cancelling...' : 'Yes, Cancel It' }}
+                </button>
+                <button class="btn btn-secondary" (click)="closePopup()" [disabled]="cancellingReservation">Keep Reservation</button>
             </div>
             <p class="popup-note">📧 You will receive an email confirmation</p>
         </div>

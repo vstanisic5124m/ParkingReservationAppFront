@@ -22,6 +22,8 @@ export class BookingComponent implements OnInit {
     showBookingPopup = false;
     showCancelPopup = false;
     selectedSpace: ParkingSpace | null = null;
+    cancellingReservation = false;
+    selectedReservation: Reservation | null = null;
 
     constructor(
         private authService: AuthService,
@@ -120,35 +122,72 @@ export class BookingComponent implements OnInit {
     confirmCancel(): void {
         if (!this.selectedSpace) return;
 
-        // Find the reservation ID - in a real app, we'd fetch this from the backend
-        // For now, we'll need to add a way to track reservation IDs
-      //  alert('Cancel functionality requires reservation ID. Please implement getMyReservations endpoint.');
-    //    this.showCancelPopup = false;
-        // Find the reservation for this space on the selected date
+        //Pronađite ID rezervacije - kanije u aplikaciji, razviti funkcionalnost da hvata sa bekenda
+        // // Za sada, ovo je način za praćenje ID-ova rezervacija
+        // // alert('Funkcija otkazivanja zahteva ID rezervacije.');
+        // // this.showCancelPopup = false;
+        // // Pronadji rezervaciju za mesto i za izabrani datum
         const reservation = this.myReservations.find(r =>
             r.parkingSpaceId === this.selectedSpace!.id &&
-            r.reservationDate === this.formatDate(this.selectedDate)
+            this.normalizeDate(r.reservationDate) === this.formatDate(this.selectedDate)
         );
 
         if (!reservation || !reservation.id) {
-            alert('Reservation not found');
+            alert('Reservation not found. Please try refreshing the page.');
             this.showCancelPopup = false;
             return;
         }
+        this.cancellingReservation = true;
 
         this.parkingService.cancelReservation(reservation.id).subscribe({
             next: () => {
+                this.cancellingReservation = false;
                 this.showCancelPopup = false;
                 alert('Reservation cancelled successfully!');
                 this.loadMyReservations();
                 this.loadParkingSpaces();
             },
             error: (error) => {
+                this.cancellingReservation = false;
                 this.showCancelPopup = false;
                 alert(error.error?.message || 'Failed to cancel reservation');
             }
         });
     }
+    // Otkazi rezervaciju, ,,myReservation" list
+    cancelReservationFromList(reservation: Reservation): void {
+        if (!reservation.id) {
+            alert('Invalid reservation');
+            return;
+        }
+
+        if (confirm(`Are you sure you want to cancel your reservation for spot #${reservation.spotNumber} on ${this.normalizeDate(reservation.reservationDate)}?`)) {
+            this.cancellingReservation = true;
+            this.parkingService.cancelReservation(reservation.id).subscribe({
+                next: () => {
+                    this.cancellingReservation = false;
+                    alert('Reservation cancelled successfully!');
+                    this.loadMyReservations();
+                    this.loadParkingSpaces();
+                },
+                error: (error) => {
+                    this.cancellingReservation = false;
+                    alert(error.error?.message || 'Failed to cancel reservation');
+                }
+            });
+        }
+    }
+
+    // Normalizacija date formata
+    normalizeDate(date: string | Date): string {
+        if (date instanceof Date) {
+            return this.formatDate(date);
+        }
+        // Ako je vec string, uveriti se da je format: YYYY-MM-DD
+        const dateObj = new Date(date);
+        return this.formatDate(dateObj);
+    }
+
 
     closePopup(): void {
         this.showBookingPopup = false;
@@ -176,7 +215,7 @@ export class BookingComponent implements OnInit {
         }
     }
 
-    // Generate array for grid layout
+    // Izgenerisi niz za grid layout
     getYardRows(): number[] {
         return Array(5).fill(0).map((_, i) => i);
     }

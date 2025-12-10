@@ -12,7 +12,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BookingComponent } from './components/booking/booking.component';
 import { OwnerComponent } from './components/owner/owner.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
-import {AdminComponent} from "./components/admin/admin.component";
+import { DateFormatPipe } from './pipes/date-format.pipe';
 
 @NgModule({
     declarations: [
@@ -22,7 +22,7 @@ import {AdminComponent} from "./components/admin/admin.component";
         DashboardComponent,
         BookingComponent,
         OwnerComponent,
-        AdminComponent
+        DateFormatPipe
     ],
     imports: [
         BrowserModule,

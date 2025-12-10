@@ -130,6 +130,45 @@
 .features li:last-child {
     border-bottom: none;
 }
+.feature-links {
+    margin-bottom: 30px;
+}
+
+.feature-link {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.2);
+    margin-bottom: 15px;
+}
+
+.feature-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+}
+
+.feature-icon {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.feature-text h4 {
+    margin: 0 0 5px 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.feature-text p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
 
 @media (max-width: 768px) {
     .navbar {
