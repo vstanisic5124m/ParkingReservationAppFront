@@ -23,7 +23,14 @@ export class BookingComponent implements OnInit {
     showCancelPopup = false;
     selectedSpace: ParkingSpace | null = null;
     cancellingReservation = false;
+    bookingInProgress = false;
     selectedReservation: Reservation | null = null;
+
+    // Pokazi mi email notifikaciju kao feedback korisniku
+    emailNotificationMessage: string | null = null;
+
+    // pop up error
+    popupError: string | null = null;
 
     constructor(
         private authService: AuthService,
@@ -90,6 +97,8 @@ export class BookingComponent implements OnInit {
     onSpaceClick(space: ParkingSpace): void {
         this.selectedSpace = space;
 
+        this.popupError = null;
+        this.emailNotificationMessage = null;
         if (space.status === 'available') {
             this.showBookingPopup = true;
         } else if (space.status === 'my-reservation') {
@@ -105,16 +114,26 @@ export class BookingComponent implements OnInit {
             reservationDate: this.formatDate(this.selectedDate)
         };
 
+        this.bookingInProgress = true;
+        this.popupError = null;
+        this.emailNotificationMessage = null;
+
         this.parkingService.createReservation(request).subscribe({
-            next: () => {
+            next: (reservation) => {
+                this.bookingInProgress = false;
                 this.showBookingPopup = false;
+
                 alert('Parking space booked successfully! (Email notification will be sent)');
+                this.emailNotificationMessage = 'A confirmation email has been sent to your account.';
                 this.loadMyReservations();
                 this.loadParkingSpaces();
             },
             error: (error) => {
-                this.showBookingPopup = false;
-                alert(error.error?.message || 'Failed to book parking space');
+              //  this.showBookingPopup = false;
+             //   alert(error.error?.message || 'Failed to book parking space');
+                this.bookingInProgress = false;
+                // prikazi server-provided poruku u popup-u
+                this.popupError = error.error?.message || 'Failed to book parking space';
             }
         });
     }
@@ -133,24 +152,29 @@ export class BookingComponent implements OnInit {
         );
 
         if (!reservation || !reservation.id) {
-            alert('Reservation not found. Please try refreshing the page.');
+            this.popupError = 'Reservation not found. Please try refreshing the page.';
             this.showCancelPopup = false;
             return;
         }
         this.cancellingReservation = true;
+        this.popupError = null;
+        this.emailNotificationMessage = null;
+
 
         this.parkingService.cancelReservation(reservation.id).subscribe({
             next: () => {
                 this.cancellingReservation = false;
                 this.showCancelPopup = false;
-                alert('Reservation cancelled successfully!');
+              //  alert('Reservation cancelled successfully!');
+                this.emailNotificationMessage = 'A cancellation confirmation email has been sent to your account.';
                 this.loadMyReservations();
                 this.loadParkingSpaces();
             },
             error: (error) => {
                 this.cancellingReservation = false;
                 this.showCancelPopup = false;
-                alert(error.error?.message || 'Failed to cancel reservation');
+              //  alert(error.error?.message || 'Failed to cancel reservation');
+                this.popupError = error.error?.message || 'Failed to cancel reservation';
             }
         });
     }
@@ -193,6 +217,9 @@ export class BookingComponent implements OnInit {
         this.showBookingPopup = false;
         this.showCancelPopup = false;
         this.selectedSpace = null;
+        this.popupError = null;
+        this.emailNotificationMessage = null;
+        this.bookingInProgress = false;
     }
 
     logout(): void {

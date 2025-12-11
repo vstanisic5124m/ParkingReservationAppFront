@@ -1,98 +1,55 @@
 <div class="booking-container">
     <nav class="navbar">
         <div class="navbar-brand">
-            <h1>🚗 Parking Reservation System</h1>
+            <h1>🚗 Parking Reservation</h1>
         </div>
         <div class="navbar-user">
-            <span class="user-name">Welcome, {{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+            <span class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
             <button class="btn btn-logout" (click)="logout()">Logout</button>
         </div>
     </nav>
 
     <div class="booking-content">
-        <!-- My Reservations Section -->
-        <div class="my-reservations-section">
-            <h2>My Active Reservations</h2>
-            <div *ngIf="myReservations.length === 0" class="no-reservations">
-                <p>You have no active reservations.</p>
-            </div>
-            <div *ngIf="myReservations.length > 0" class="reservations-list">
-                <div *ngFor="let reservation of myReservations" class="reservation-card">
-                    <div class="reservation-info">
-                        <div class="reservation-detail">
-                            <span class="label">Spot:</span>
-                            <span class="value">#{{ reservation.spotNumber }}</span>
-                        </div>
-                        <div class="reservation-detail">
-                            <span class="label">Type:</span>
-                            <span class="value">{{ reservation.parkingType }}</span>
-                        </div>
-                        <div class="reservation-detail">
-                            <span class="label">Date:</span>
-                            <span class="value">{{ normalizeDate(reservation.reservationDate) }}</span>
-                        </div>
-                    </div>
-                    <button
-                            class="btn btn-cancel-small"
-                            (click)="cancelReservationFromList(reservation)"
-                            [disabled]="cancellingReservation"
-                    >
-                        {{ cancellingReservation ? 'Cancelling...' : 'Cancel' }}
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <div class="date-selector">
             <h2>Select Date</h2>
-            <input
-                    type="date"
-                    [value]="formatDate(selectedDate)"
-                    (change)="onDateChange($event)"
-                    class="date-input"
-            />
+            <input class="date-input" type="date" [value]="formatDate(selectedDate)" (change)="onDateChange($event)" />
         </div>
 
-        <div *ngIf="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Loading parking spaces...</p>
-        </div>
-
-        <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-
-        <div *ngIf="!loading && !error">
-            <!-- Yard Parking (5x10) -->
-            <div class="parking-section">
-                <h3>Yard Parking (5x10 = 50 spaces)</h3>
-                <div class="parking-grid yard-grid">
-                    <div *ngFor="let row of getYardRows()" class="parking-row">
-                        <div
-                                *ngFor="let col of getYardCols()"
-                                class="parking-space"
-                                [class]="getSpaceClass(getSpaceAtPosition('YARD', row, col)!)"
-                                [class.clickable]="getSpaceAtPosition('YARD', row, col)?.status === 'available' || getSpaceAtPosition('YARD', row, col)?.status === 'my-reservation'"
-                                (click)="onSpaceClick(getSpaceAtPosition('YARD', row, col)!)"
-                        >
-                            {{ getSpaceAtPosition('YARD', row, col)?.spotNumber }}
-                        </div>
+        <div class="parking-section">
+            <h3>Dvoriste (50 mesta)</h3>
+            <div class="parking-grid yard-grid">
+                <div *ngFor="let row of getYardRows()" class="parking-row">
+                    <div
+                            *ngFor="let col of getYardCols()"
+                            class="parking-space"
+                            [class]="getSpaceClass(getSpaceAtPosition('YARD', row, col)!)"
+                            [class.clickable]="getSpaceAtPosition('YARD', row, col)?.status === 'available' || getSpaceAtPosition('YARD', row, col)?.status === 'my-reservation'"
+                            (click)="onSpaceClick(getSpaceAtPosition('YARD', row, col)!)"
+                            [attr.id]="getSpaceAtPosition('YARD', row, col)?.id ? 'spot-'+getSpaceAtPosition('YARD', row, col)?.id : null"
+                            [attr.data-spot-id]="getSpaceAtPosition('YARD', row, col)?.id"
+                            aria-label="Yard spot {{ getSpaceAtPosition('YARD', row, col)?.spotNumber }}"
+                            role="button"
+                    >
+                        {{ getSpaceAtPosition('YARD', row, col)?.spotNumber }}
                     </div>
                 </div>
             </div>
 
-            <!-- Garage Parking (10x10) -->
-            <div class="parking-section">
-                <h3>Garage Parking (10x10 = 100 spaces)</h3>
-                <div class="parking-grid garage-grid">
-                    <div *ngFor="let row of getGarageRows()" class="parking-row">
-                        <div
-                                *ngFor="let col of getGarageCols()"
-                                class="parking-space"
-                                [class]="getSpaceClass(getSpaceAtPosition('GARAGE', row, col)!)"
-                                [class.clickable]="getSpaceAtPosition('GARAGE', row, col)?.status === 'available' || getSpaceAtPosition('GARAGE', row, col)?.status === 'my-reservation'"
-                                (click)="onSpaceClick(getSpaceAtPosition('GARAGE', row, col)!)"
-                        >
-                            {{ getSpaceAtPosition('GARAGE', row, col)?.spotNumber }}
-                        </div>
+            <h3>Garaza (100 mesta)</h3>
+            <div class="parking-grid garage-grid">
+                <div *ngFor="let row of getGarageRows()" class="parking-row">
+                    <div
+                            *ngFor="let col of getGarageCols()"
+                            class="parking-space"
+                            [class]="getSpaceClass(getSpaceAtPosition('GARAGE', row, col)!)"
+                            [class.clickable]="getSpaceAtPosition('GARAGE', row, col)?.status === 'available' || getSpaceAtPosition('GARAGE', row, col)?.status === 'my-reservation'"
+                            (click)="onSpaceClick(getSpaceAtPosition('GARAGE', row, col)!)"
+                            [attr.id]="getSpaceAtPosition('GARAGE', row, col)?.id ? 'spot-'+getSpaceAtPosition('GARAGE', row, col)?.id : null"
+                            [attr.data-spot-id]="getSpaceAtPosition('GARAGE', row, col)?.id"
+                            aria-label="Garage spot {{ getSpaceAtPosition('GARAGE', row, col)?.spotNumber }}"
+                            role="button"
+                    >
+                        {{ getSpaceAtPosition('GARAGE', row, col)?.spotNumber }}
                     </div>
                 </div>
             </div>
@@ -118,36 +75,48 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Booking Popup -->
-    <div *ngIf="showBookingPopup" class="popup-overlay" (click)="closePopup()">
-        <div class="popup-content" (click)="$event.stopPropagation()">
-            <h3>Confirm Booking</h3>
-            <p>Do you want to book parking space #{{ selectedSpace?.spotNumber }}?</p>
-            <p><strong>Date:</strong> {{ formatDate(selectedDate) }}</p>
-            <p><strong>Type:</strong> {{ selectedSpace?.parkingType }}</p>
-            <div class="popup-actions">
-                <button class="btn btn-primary" (click)="confirmBooking()">Yes, Book It</button>
-                <button class="btn btn-secondary" (click)="closePopup()">Cancel</button>
+        <!-- Booking Popup -->
+        <div *ngIf="showBookingPopup" class="popup-overlay" (click)="closePopup()">
+            <div class="popup-content" (click)="$event.stopPropagation()">
+                <h3>Potvrdite rezervaciju</h3>
+                <p>Da li zelite da rezervisete ovo parking mesto? #{{ selectedSpace?.spotNumber }}?</p>
+                <p><strong>Date:</strong> {{ formatDate(selectedDate) }}</p>
+                <p><strong>Type:</strong> {{ selectedSpace?.parkingType }}</p>
+
+                <div *ngIf="popupError" class="popup-error">{{ popupError }}</div>
+
+                <div class="popup-actions">
+                    <button class="btn btn-primary" (click)="confirmBooking()" [disabled]="bookingInProgress">
+                        {{ bookingInProgress ? 'Booking...' : 'Yes, Book It' }}
+                    </button>
+                    <button class="btn btn-secondary" (click)="closePopup()" [disabled]="bookingInProgress">Cancel</button>
+                </div>
+
+                <p class="popup-note">📧 You will receive an email confirmation after booking.</p>
+                <p *ngIf="emailNotificationMessage" class="email-note">{{ emailNotificationMessage }}</p>
             </div>
-            <p class="popup-note">📧 You will receive an email confirmation</p>
         </div>
-    </div>
 
-    <!-- Cancel Popup -->
-    <div *ngIf="showCancelPopup" class="popup-overlay" (click)="closePopup()">
-        <div class="popup-content" (click)="$event.stopPropagation()">
-            <h3>Cancel Reservation</h3>
-            <p>Do you want to cancel your reservation for parking space #{{ selectedSpace?.spotNumber }}?</p>
-            <p><strong>Date:</strong> {{ formatDate(selectedDate) }}</p>
-            <div class="popup-actions">
-                <button class="btn btn-danger" (click)="confirmCancel()" [disabled]="cancellingReservation">
-                    {{ cancellingReservation ? 'Cancelling...' : 'Yes, Cancel It' }}
-                </button>
-                <button class="btn btn-secondary" (click)="closePopup()" [disabled]="cancellingReservation">Keep Reservation</button>
+        <!-- Cancel Popup -->
+        <div *ngIf="showCancelPopup" class="popup-overlay" (click)="closePopup()">
+            <div class="popup-content" (click)="$event.stopPropagation()">
+                <h3>Otkazi rezervaciju</h3>
+                <p>Da li zelite da otkazete ovo parking mesto ? #{{ selectedSpace?.spotNumber }}?</p>
+                <p><strong>Date:</strong> {{ formatDate(selectedDate) }}</p>
+
+                <div *ngIf="popupError" class="popup-error">{{ popupError }}</div>
+
+                <div class="popup-actions">
+                    <button class="btn btn-danger" (click)="confirmCancel()" [disabled]="cancellingReservation">
+                        {{ cancellingReservation ? 'Cancelling...' : 'Yes, Cancel It' }}
+                    </button>
+                    <button class="btn btn-secondary" (click)="closePopup()" [disabled]="cancellingReservation">Keep Reservation</button>
+                </div>
+
+                <p class="popup-note">📧 You will receive an email confirmation after cancellation.</p>
+                <p *ngIf="emailNotificationMessage" class="email-note">{{ emailNotificationMessage }}</p>
             </div>
-            <p class="popup-note">📧 You will receive an email confirmation</p>
         </div>
     </div>
 </div>
