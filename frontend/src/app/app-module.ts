@@ -11,7 +11,7 @@ import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BookingComponent } from './components/booking/booking.component';
 import OwnerComponent from './components/owner/owner.component';
-import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { JwtInterceptor } from './interceptors/jwt.interceptors';
 import { DateFormatPipe } from './pipes/date-format.pipe';
 
 @NgModule({
