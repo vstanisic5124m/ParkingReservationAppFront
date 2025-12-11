@@ -87,6 +87,46 @@ ParkingReservation/
 
 ## Startovanje
 
+### Brzo pokretanje sa terminalskim skriptama (Preporučeno)
+
+Najbrži način da pokrenete aplikaciju:
+
+#### 1. Prvi put - instalacija zavisnosti
+
+```bash
+./setup.sh
+```
+
+Ova skripta će:
+- Proveriti da li su Node.js i npm instalirani
+- Instalirati sve npm zavisnosti za frontend
+- Pripremiti aplikaciju za pokretanje
+
+#### 2. Pokretanje aplikacije
+
+```bash
+./start.sh
+```
+
+Aplikacija će biti dostupna na: **http://localhost:4200**
+
+Pritisnite `Ctrl+C` da zaustavite server.
+
+#### 3. Alternativno - manuelno pokretanje
+
+Možete takođe pokrenuti aplikaciju manuelno:
+
+```bash
+# Navigirajte do frontend direktorijuma
+cd frontend/src
+
+# Pokrenite development server
+npm start
+```
+
+Aplikacija će biti dostupna na: **http://localhost:4200**
+
+---
 
 ## Napomena: Autogenerisan ##
 
@@ -127,7 +167,7 @@ In a new terminal:
 
 ```bash
 # Navigate to frontend directory
-cd frontend
+cd frontend/src
 
 # Install dependencies (first time only)
 npm install
