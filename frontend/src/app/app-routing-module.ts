@@ -4,7 +4,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AuthGuard } from './guards/auth.guard';
-import { OwnerComponent } from './components/owner/owner.component';
+import OwnerComponent from './components/owner/owner.component';
 import { BookingComponent } from './components/booking/booking.component';
 import {AdminComponent} from "./components/admin/admin.component";
 

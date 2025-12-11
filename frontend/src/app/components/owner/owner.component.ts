@@ -18,7 +18,7 @@ interface CalendarDay {
     standalone: false,
     styleUrls: ['./owner.component.css']
 })
-export class OwnerComponent implements OnInit {
+class OwnerComponent implements OnInit {
     currentUser: JwtResponse | null = null;
     selectedDate: Date = new Date();
     minDate: string = '';
@@ -205,3 +205,5 @@ export class OwnerComponent implements OnInit {
         return new Date().getHours() >= 17;
     }
 }
+
+export default OwnerComponent
