@@ -25,6 +25,7 @@
                 <div style="margin-top:0.5rem; font-size:0.9rem; color:#444;">
                     <strong>Auth debug:</strong>
                     <span style="margin-left:0.5rem">Has token: {{ !!authService.getToken() }}</span>
+                    <button *ngIf="demoMode" class="btn btn-secondary" style="margin-left:1rem" (click)="refreshRandomDecoration()">Regenerate decorations</button>
                 </div>
             </div>
 

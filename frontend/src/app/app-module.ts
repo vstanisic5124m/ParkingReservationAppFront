@@ -11,8 +11,10 @@ import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { BookingComponent } from './components/booking/booking.component';
 import OwnerComponent from './components/owner/owner.component';
+import { AdminComponent } from './components/admin/admin.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptors';
 import { DateFormatPipe } from './pipes/date-format.pipe';
+import { ToastComponent } from './components/toast/toast.component';
 
 @NgModule({
     declarations: [
@@ -22,7 +24,9 @@ import { DateFormatPipe } from './pipes/date-format.pipe';
         DashboardComponent,
         BookingComponent,
         OwnerComponent,
-        DateFormatPipe
+        AdminComponent,
+        DateFormatPipe,
+        ToastComponent
     ],
     imports: [
         BrowserModule,
