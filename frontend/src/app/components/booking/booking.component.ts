@@ -45,6 +45,9 @@ export class BookingComponent implements OnInit {
     // Track available count for template usage (avoid inline functions)
     availableCount = 0;
 
+    // DEV: force demo data (set true to always show colored demo spots)
+    demoMode = true;
+
     constructor(
         public authService: AuthService,
         private parkingService: ParkingService,
@@ -82,8 +85,25 @@ export class BookingComponent implements OnInit {
 
         const dateStr = this.formatDate(this.selectedDate);
 
+        // If demoMode is enabled, skip API calls and use demo data
+        if (this.demoMode) {
+            const demo = this.generateDemoSpaces();
+            this.parkingSpaces = demo;
+            this.yardSpaces = demo.filter(s => s.parkingType === 'YARD').sort((a, b) => a.spotNumber - b.spotNumber);
+            this.garageSpaces = demo.filter(s => s.parkingType === 'GARAGE').sort((a, b) => a.spotNumber - b.spotNumber);
+            this.availableCount = this.parkingSpaces.filter(s => s.status === 'available').length;
+            this.applyRandomOccupiedDecoration();
+            this.loading = false;
+            return;
+        }
+
         this.parkingService.getParkingSpaces(dateStr).subscribe({
             next: (spaces) => {
+                // If backend returned an empty list, fall back to demo dataset so UI remains visible
+                if (!spaces || spaces.length === 0) {
+                    console.warn('[Booking] API returned empty parking spaces; using demo data');
+                    spaces = this.generateDemoSpaces();
+                }
                 this.parkingSpaces = spaces;
                 this.yardSpaces = spaces.filter(s => s.parkingType === 'YARD').sort((a, b) => a.spotNumber - b.spotNumber);
                 this.garageSpaces = spaces.filter(s => s.parkingType === 'GARAGE').sort((a, b) => a.spotNumber - b.spotNumber);
@@ -148,23 +168,23 @@ export class BookingComponent implements OnInit {
         return 'available';
     }
 
-    // Mark a small subset of currently available spaces as visually occupied (red)
+    // Mark a small subset of all spaces as visually decorated (random colors)
     private applyRandomOccupiedDecoration(): void {
         this.randomDecorations.clear();
 
-        const allAvailable = this.parkingSpaces.filter(s => s.status === 'available');
-        if (!allAvailable || allAvailable.length === 0) return;
+        const allSpaces = this.parkingSpaces.slice();
+        if (!allSpaces || allSpaces.length === 0) return;
 
-        // pick up to ~8% of available spaces, minimum 3, maximum 12
-        const pickCount = Math.min(12, Math.max(3, Math.floor(allAvailable.length * 0.08)));
-        const shuffled = allAvailable.slice();
+        // pick up to ~12% of all spaces, minimum 5, maximum 24 to ensure visible decorations
+        const pickCount = Math.min(24, Math.max(5, Math.floor(allSpaces.length * 0.12)));
+        const shuffled = allSpaces.slice();
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
 
         // color palette for random decoration
-        const colors = ['#f44336', '#4caf50', '#ffb300', '#ff5722'];
+        const colors = ['#f44336', '#4caf50', '#ffb300', '#ff5722', '#9c27b0'];
 
         for (let i = 0; i < Math.min(pickCount, shuffled.length); i++) {
             const s = shuffled[i];

@@ -52,7 +52,7 @@
                                         aria-label="Yard spot {{ space.spotNumber }}"
                                         [disabled]="(!isAvailable(space) && !isMyReservation(space) && !isRandomDecorated(space))"
                                         [title]="isRandomDecorated(space) ? 'Randomly decorated spot' : ''">
-                                    <span *ngIf="isRandomDecorated(space)">★</span>
+                                    <span *ngIf="isRandomDecorated(space)" class="star">★</span>
                                     <span *ngIf="!isRandomDecorated(space) && isSelected(space)">✔</span>
                                     <span *ngIf="!isRandomDecorated(space) && !isSelected(space)">{{ space.spotNumber }}</span>
                                 </button>
@@ -91,7 +91,7 @@
                                         aria-label="Garage spot {{ space.spotNumber }}"
                                         [disabled]="(!isAvailable(space) && !isMyReservation(space) && !isRandomDecorated(space))"
                                         [title]="isRandomDecorated(space) ? 'Randomly decorated spot' : ''">
-                                    <span *ngIf="isRandomDecorated(space)">★</span>
+                                    <span *ngIf="isRandomDecorated(space)" class="star">★</span>
                                     <span *ngIf="!isRandomDecorated(space) && isSelected(space)">✔</span>
                                     <span *ngIf="!isRandomDecorated(space) && !isSelected(space)">{{ space.spotNumber }}</span>
                                 </button>
