@@ -8,12 +8,11 @@
             <button class="btn btn-logout" (click)="logout()">Logout</button>
         </div>
     </nav>
-</div>
 
     <div class="owner-content">
         <div class="welcome-card">
             <h2>Otkazi parking mesto</h2>
-            <p>Kao vlasnik parking mesta, mozete da otkazete Vase mesto za buduce datume </p>
+            <p>Kao vlasnik parking mesta, mozete da otkazete Vase mesto za buduce datume.</p>
 
             <div class="info-box">
                 <h4>⏰ Vazna pravila:</h4>
@@ -40,111 +39,88 @@
             <div class="form-group">
                 <label for="cancellationDate">Datum otkazivanja:</label>
                 <input
-                        type="date"
-                        id="cancellationDate"
-                        [min]="minDate"
-                        [value]="formatDate(selectedDate)"
-                        (change)="onDateChange($event)"
-                        class="date-input"
+                    type="date"
+                    id="cancellationDate"
+                    [min]="minDate"
+                    [value]="formatDate(selectedDate)"
+                    (change)="onDateChange($event)"
+                    class="date-input"
                 />
                 <p class="help-text">Minimum date: {{ minDate }}</p>
             </div>
 
-            <div class="owner-content">
-                <div class="welcome-card">
-                    <h2>Mogucnost otkazivanja parking mesta</h2>
-                    <p>Kao vlasnik parking mesta, mozete da otkazete Vase mesto za buduce datume </p>
+            <div class="form-group">
+                <label>Datum otkazivanja (trenutni mesec):</label>
+                <p class="help-text">Minimum allowed date: {{ minDate }}</p>
 
-                    <div class="info-box">
-                        <h4>⏰ Vazna pravila:</h4>
-                        <ul>
-                            <li>Ne mozete otkazati parking mesto za danas</li>
-                            <li *ngIf="isAfter5PM()" class="highlight">⚠️ Proslo je 5:00 PM - Nemate mogucnost da otkazete mesto za sutra, mozete prekosutra pa nadalje datume</li>
-                            <li *ngIf="!isAfter5PM()">✅ Mozete otkazati parking mesto za sutra</li>
-                            <li>Current time: {{ getCurrentTime() }}</li>
-                        </ul>
+                <!-- Calendar grid for current month -->
+                <div class="calendar">
+                    <div class="month-label">{{ monthLabel }}</div>
+                    <div class="weekdays">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                     </div>
 
-                    <div class="your-space">
-                        <h4>Vase parking mesto:</h4>
-                        <p><strong>ID parking mesta:</strong> {{ currentUser?.ownedParkingSpaceId || 'Not assigned' }}</p>
-                    </div>
-                </div>
-
-                <div class="cancellation-form">
-                    <h3>Izaberite datum otkazivanja:</h3>
-
-                    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-                    <div *ngIf="success" class="alert alert-success">{{ success }}</div>
-
-                    <div class="form-group">
-                        <label>Datum otkazivanja (trenutni mesec):</label>
-                        <p class="help-text">Minimum allowed date: {{ minDate }}</p>
-
-                        <!-- Calendar grid for current month -->
-                        <div class="calendar">
-                            <div class="month-label">{{ monthLabel }}</div>
-                            <div class="weekdays">
-                                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                            </div>
-
-                            <div class="weeks">
-                                <div class="week" *ngFor="let week of weeks">
-                                    <div
-                                            class="day"
-                                            *ngFor="let day of week"
-                                            [class.blank]="!day.date"
-                                            [class.disabled]="day.disabled || !day.isCurrentMonth"
-                                            [class.selected]="day.isSelected"
-                                            (click)="selectCalendarDay(day)"
-                                            title="{{ day.date ? formatDate(day.date) : '' }}"
-                                    >
-                                        {{ day.label }}
-                                    </div>
-                                </div>
+                    <div class="weeks">
+                        <div class="week" *ngFor="let week of weeks">
+                            <div
+                                class="day"
+                                *ngFor="let day of week"
+                                [class.blank]="!day.date"
+                                [class.disabled]="day.disabled || !day.isCurrentMonth"
+                                [class.selected]="day.isSelected"
+                                (click)="selectCalendarDay(day)"
+                                title="{{ day.date ? formatDate(day.date) : '' }}"
+                            >
+                                {{ day.label }}
                             </div>
                         </div>
-
-                        <!-- Sakriven input datuma za manuelno biranje -->
-                        <input
-                                type="date"
-                                id="cancellationDate"
-                                [min]="minDate"
-                                [value]="formatDate(selectedDate)"
-                                (change)="onDateChange($event)"
-                                class="date-input"
-                                style="display: none;"
-                        />
                     </div>
 
-                    <button class="btn btn-danger" (click)="cancelAvailability()">
-                        Mogucnost otkazivanja : {{ formatDate(selectedDate) }}
-                    </button>
-
-                    <div class="calendar-note">
-                        <h4>📅 Pravila:</h4>
-                        <p>Mogucnost otkazivanja za specifican datum:</p>
-                        <ul>
-                            <li>Vase parking mesto nece biti taj dan na raspolaganju</li>
-                            <li>Svaka postojeca rezervacija za taj dan mora biti obradjena odvojeno</li>
-                            <li>Korisnici ce videti Vase mesto kao ,,Korisnik otkazao" na kalendaru </li>
-                            <li>Dobicete email potvrde</li>
-                        </ul>
-                    </div>
                 </div>
+
+                <!-- Hidden native date input (kept for accessibility) -->
+                <input
+                    type="date"
+                    id="cancellationDateHidden"
+                    [min]="minDate"
+                    [value]="formatDate(selectedDate)"
+                    (change)="onDateChange($event)"
+                    class="date-input"
+                    style="display: none;"
+                />
             </div>
 
-            <!-- Confirmation Popup -->
-            <div *ngIf="showConfirmPopup" class="popup-overlay" (click)="closePopup()">
-                <div class="popup-content" (click)="$event.stopPropagation()">
-                    <h3>⚠️ Potvrdi otkazivanje</h3>
-                    <p>Da li ste sigurni da zelite da otkazete Vase parking mesto ?</p>
-                    <p><strong>Datum:</strong> {{ formatDate(selectedDate) }}</p>
-                    <p><strong>Id tvog parking mesta:</strong> {{ currentUser?.ownedParkingSpaceId }}</p>
-                    <p class="warning-text">This action will prevent users from booking your spot on this date.</p>
-                    <div class="popup-actions">
-                        <button class="btn btn-danger" (click)="confirmCancel()">Da, otkazi</button>
-                        <button class="btn btn-secondary" (click)="closePopup()">Ne, ostavi na raspolaganju</button>
-                    </div>
+            <button class="btn btn-danger" (click)="cancelAvailability()">
+                Mogucnost otkazivanja : {{ formatDate(selectedDate) }}
+            </button>
+
+            <div class="calendar-note">
+                <h4>📅 Pravila:</h4>
+                <p>Mogucnost otkazivanja za specifican datum:</p>
+                <ul>
+                    <li>Vase parking mesto nece biti taj dan na raspolaganju</li>
+                    <li>Svaka postojeca rezervacija za taj dan mora biti obradjena odvojeno</li>
+                    <li>Korisnici ce videti Vase mesto kao ,,Korisnik otkazao" na kalendaru</li>
+                    <li>Dobicete email potvrde</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Confirmation Popup -->
+        <div *ngIf="showConfirmPopup" class="popup-overlay" (click)="closePopup()">
+            <div class="popup-content" (click)="$event.stopPropagation()">
+                <h3>⚠️ Potvrdi otkazivanje</h3>
+                <p>Da li ste sigurni da zelite da otkazete Vase parking mesto ?</p>
+                <p><strong>Datum:</strong> {{ formatDate(selectedDate) }}</p>
+                <p><strong>Id tvog parking mesta:</strong> {{ currentUser?.ownedParkingSpaceId }}</p>
+                <p class="warning-text">This action will prevent users from booking your spot on this date.</p>
+                <div class="popup-actions">
+                    <button class="btn btn-danger" (click)="confirmCancel()">Da, otkazi</button>
+                    <button class="btn btn-secondary" (click)="closePopup()">Ne, ostavi na raspolaganju</button>
                 </div>
             </div>
+        </div>
+
+    </div>
+</div>
+
