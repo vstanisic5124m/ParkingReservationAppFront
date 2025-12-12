@@ -5,6 +5,8 @@ import { FormControl } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-admin',
@@ -32,7 +34,7 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
 
-    constructor(private adminService: AdminService, private toast: ToastService) {}
+    constructor(private adminService: AdminService, private toast: ToastService, private auth: AuthService, private router: Router) {}
 
     ngAfterViewInit(): void {
         // Initial load
@@ -179,5 +181,10 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+    logout(): void {
+        this.auth.logout();
+        this.router.navigate(['/login']);
     }
 }
