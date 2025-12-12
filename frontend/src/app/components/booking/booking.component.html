@@ -1,3 +1,4 @@
+<!-- html -->
 <div class="booking-container">
     <nav class="navbar">
         <div class="navbar-brand">
@@ -16,42 +17,94 @@
         </div>
 
         <div class="parking-section">
-            <h3>Dvoriste (50 mesta)</h3>
-            <div class="parking-grid yard-grid">
-                <div *ngFor="let row of getYardRows()" class="parking-row">
-                    <div
-                            *ngFor="let col of getYardCols()"
-                            class="parking-space"
-                            [class]="getSpaceClass(getSpaceAtPosition('YARD', row, col)!)"
-                            [class.clickable]="getSpaceAtPosition('YARD', row, col)?.status === 'available' || getSpaceAtPosition('YARD', row, col)?.status === 'my-reservation'"
-                            (click)="onSpaceClick(getSpaceAtPosition('YARD', row, col)!)"
-                            [attr.id]="getSpaceAtPosition('YARD', row, col)?.id ? 'spot-'+getSpaceAtPosition('YARD', row, col)?.id : null"
-                            [attr.data-spot-id]="getSpaceAtPosition('YARD', row, col)?.id"
-                            aria-label="Yard spot {{ getSpaceAtPosition('YARD', row, col)?.spotNumber }}"
-                            role="button"
-                    >
-                        {{ getSpaceAtPosition('YARD', row, col)?.spotNumber }}
-                    </div>
+            <div class="debug-panel" style="margin-bottom:1rem; font-size:0.9rem; color:#555;">
+                <strong>Debug:</strong>
+                <span>Available: {{ availableCount }}</span>
+                <span style="margin-left:1rem">Random picks: {{ getRandomOccupiedArray().length }}</span>
+                <div style="margin-top:0.5rem">IDs: {{ getRandomOccupiedArray() }}</div>
+                <div style="margin-top:0.5rem; font-size:0.9rem; color:#444;">
+                    <strong>Auth debug:</strong>
+                    <span style="margin-left:0.5rem">Has token: {{ !!authService.getToken() }}</span>
                 </div>
             </div>
 
-            <h3>Garaza (100 mesta)</h3>
-            <div class="parking-grid garage-grid">
-                <div *ngFor="let row of getGarageRows()" class="parking-row">
-                    <div
-                            *ngFor="let col of getGarageCols()"
-                            class="parking-space"
-                            [class]="getSpaceClass(getSpaceAtPosition('GARAGE', row, col)!)"
-                            [class.clickable]="getSpaceAtPosition('GARAGE', row, col)?.status === 'available' || getSpaceAtPosition('GARAGE', row, col)?.status === 'my-reservation'"
-                            (click)="onSpaceClick(getSpaceAtPosition('GARAGE', row, col)!)"
-                            [attr.id]="getSpaceAtPosition('GARAGE', row, col)?.id ? 'spot-'+getSpaceAtPosition('GARAGE', row, col)?.id : null"
-                            [attr.data-spot-id]="getSpaceAtPosition('GARAGE', row, col)?.id"
-                            aria-label="Garage spot {{ getSpaceAtPosition('GARAGE', row, col)?.spotNumber }}"
-                            role="button"
-                    >
-                        {{ getSpaceAtPosition('GARAGE', row, col)?.spotNumber }}
-                    </div>
-                </div>
+            <h3>Dvoriste (50 mesta) — Table view</h3>
+            <div class="parking-tables-wrapper">
+                <table class="parking-table yard-table" role="grid" aria-label="Yard parking table">
+                    <caption>Yard layout — 5 rows × 10 columns</caption>
+                    <tbody>
+                    <tr *ngFor="let row of getYardRows()" role="row">
+                        <td *ngFor="let col of getYardCols()"
+                            role="gridcell"
+                            class="grid-cell">
+                            <ng-container *ngIf="getSpaceAtPosition('YARD', row, col) as space; else emptyYard">
+                                <button class="space-btn"
+                                        (click)="onSpaceClick(space)"
+                                        [ngClass]="getUiClass(space)"
+                                        [class.ui-selected]="isSelected(space)"
+                                        [class.random-occupied]="isRandomDecorated(space)"
+                                        [class.clickable]="(isAvailable(space) || isMyReservation(space) || isRandomDecorated(space))"
+                                        [style.backgroundColor]="getBackgroundColor(space)"
+                                        [style.color]="getTextColor(space)"
+                                        [style.borderColor]="getBorderColor(space)"
+                                        [attr.id]="space.id ? 'spot-'+space.id : null"
+                                        [attr.data-spot-id]="space.id"
+                                        aria-label="Yard spot {{ space.spotNumber }}"
+                                        [disabled]="(!isAvailable(space) && !isMyReservation(space) && !isRandomDecorated(space))"
+                                        [title]="isRandomDecorated(space) ? 'Randomly decorated spot' : ''">
+                                    <span *ngIf="isRandomDecorated(space)">★</span>
+                                    <span *ngIf="!isRandomDecorated(space) && isSelected(space)">✔</span>
+                                    <span *ngIf="!isRandomDecorated(space) && !isSelected(space)">{{ space.spotNumber }}</span>
+                                </button>
+                            </ng-container>
+                            <ng-template #emptyYard>
+                                <!-- Show a placeholder disabled button with computed spot number so grid is visible -->
+                                <button class="space-btn placeholder" disabled aria-hidden="true">
+                                    {{ getSpotNumber('YARD', row, col) }}
+                                </button>
+                            </ng-template>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <h3>Garaza (100 mesta) — Table view</h3>
+                <table class="parking-table garage-table" role="grid" aria-label="Garage parking table">
+                    <caption>Garage layout — 10 rows × 10 columns</caption>
+                    <tbody>
+                    <tr *ngFor="let row of getGarageRows()" role="row">
+                        <td *ngFor="let col of getGarageCols()"
+                            role="gridcell"
+                            class="grid-cell">
+                            <ng-container *ngIf="getSpaceAtPosition('GARAGE', row, col) as space; else emptyGarage">
+                                <button class="space-btn"
+                                        (click)="onSpaceClick(space)"
+                                        [ngClass]="getUiClass(space)"
+                                        [class.ui-selected]="isSelected(space)"
+                                        [class.random-occupied]="isRandomDecorated(space)"
+                                        [class.clickable]="(isAvailable(space) || isMyReservation(space) || isRandomDecorated(space))"
+                                        [style.backgroundColor]="getBackgroundColor(space)"
+                                        [style.color]="getTextColor(space)"
+                                        [style.borderColor]="getBorderColor(space)"
+                                        [attr.id]="space.id ? 'spot-'+space.id : null"
+                                        [attr.data-spot-id]="space.id"
+                                        aria-label="Garage spot {{ space.spotNumber }}"
+                                        [disabled]="(!isAvailable(space) && !isMyReservation(space) && !isRandomDecorated(space))"
+                                        [title]="isRandomDecorated(space) ? 'Randomly decorated spot' : ''">
+                                    <span *ngIf="isRandomDecorated(space)">★</span>
+                                    <span *ngIf="!isRandomDecorated(space) && isSelected(space)">✔</span>
+                                    <span *ngIf="!isRandomDecorated(space) && !isSelected(space)">{{ space.spotNumber }}</span>
+                                </button>
+                            </ng-container>
+                            <ng-template #emptyGarage>
+                                <button class="space-btn placeholder" disabled aria-hidden="true">
+                                    {{ getSpotNumber('GARAGE', row, col) }}
+                                </button>
+                            </ng-template>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Legend -->
@@ -67,7 +120,7 @@
                 </div>
                 <div class="legend-item">
                     <div class="legend-box space-my-reservation"></div>
-                    <span>My Reservation</span>
+                    <span>Selected / Booking</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-box space-cancelled"></div>

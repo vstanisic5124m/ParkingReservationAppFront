@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ParkingService } from '../../services/parking.service';
 import { JwtResponse, ParkingSpace, Reservation, ReservationRequest } from '../../models/user.model';
+import { DateUtils } from '../../utils/date-utils';
 
 @Component({
     selector: 'app-booking',
@@ -19,21 +20,33 @@ export class BookingComponent implements OnInit {
     myReservations: Reservation[] = [];
     loading = false;
     error = '';
+
+    // UI state for popups and feedback
     showBookingPopup = false;
     showCancelPopup = false;
     selectedSpace: ParkingSpace | null = null;
     cancellingReservation = false;
     bookingInProgress = false;
-    selectedReservation: Reservation | null = null;
 
-    // Pokazi mi email notifikaciju kao feedback korisniku
+    // UI selection state
+    selectedSpotId: number | null = null;
+
+    // Random UI decorations map (parkingSpaceId -> color hex)
+    randomDecorations: Map<number, string> = new Map();
+    // debug: last time decoration was applied
+    randomDecorationTimestamp: number | null = null;
+
+    // New: show email notification message returned from backend/assumed sent
     emailNotificationMessage: string | null = null;
 
-    // pop up error
+    // New: show popup-level error
     popupError: string | null = null;
 
+    // Track available count for template usage (avoid inline functions)
+    availableCount = 0;
+
     constructor(
-        private authService: AuthService,
+        public authService: AuthService,
         private parkingService: ParkingService,
         private router: Router
     ) {}
@@ -41,11 +54,13 @@ export class BookingComponent implements OnInit {
     ngOnInit(): void {
         this.currentUser = this.authService.currentUserValue;
 
-        // Redirect owners to owner page
-        if (this.currentUser?.role === 'OWNER') {
-            this.router.navigate(['/owner']);
-            return;
-        }
+        // NOTE: do not force redirect to login here so the UI can show a demo view
+        // if the backend is not reachable or the user is not authenticated.
+        // Users can still log in via the Login page if needed.
+
+        // (Optional) If you want to force login, re-enable redirect here.
+
+
         this.loadMyReservations();
         this.loadParkingSpaces();
     }
@@ -61,7 +76,6 @@ export class BookingComponent implements OnInit {
         });
     }
 
-
     loadParkingSpaces(): void {
         this.loading = true;
         this.error = '';
@@ -73,20 +87,208 @@ export class BookingComponent implements OnInit {
                 this.parkingSpaces = spaces;
                 this.yardSpaces = spaces.filter(s => s.parkingType === 'YARD').sort((a, b) => a.spotNumber - b.spotNumber);
                 this.garageSpaces = spaces.filter(s => s.parkingType === 'GARAGE').sort((a, b) => a.spotNumber - b.spotNumber);
+
+                // Update availableCount for template
+                this.availableCount = this.parkingSpaces.filter(s => s.status === 'available').length;
+
+                // Apply random red decorations for visual variety
+                this.applyRandomOccupiedDecoration();
+
                 this.loading = false;
             },
             error: (error) => {
-                this.error = error.error?.message || 'Failed to load parking spaces';
+                // If API fails (e.g., 403) provide a client-side demo dataset so the UI is visible.
+                console.warn('[Booking] Failed to load parking spaces from API, falling back to demo data:', error?.status);
+                this.error = error.error?.message || 'Failed to load parking spaces; showing demo data';
+                // generate demo spaces for UI demonstration
+                const demo = this.generateDemoSpaces();
+                this.parkingSpaces = demo;
+                this.yardSpaces = demo.filter(s => s.parkingType === 'YARD').sort((a, b) => a.spotNumber - b.spotNumber);
+                this.garageSpaces = demo.filter(s => s.parkingType === 'GARAGE').sort((a, b) => a.spotNumber - b.spotNumber);
+                this.availableCount = this.parkingSpaces.filter(s => s.status === 'available').length;
+                this.applyRandomOccupiedDecoration();
                 this.loading = false;
-            }
+             }
         });
     }
 
+    // Create a demo dataset: 50 yard spots (5x10) and 100 garage spots (10x10)
+    private generateDemoSpaces(): ParkingSpace[] {
+        const demo: ParkingSpace[] = [];
+        let id = 1;
+
+        // Yard: 5 rows x 10 cols => 50 spots
+        for (let i = 0; i < 50; i++) {
+            demo.push({
+                id: id++,
+                parkingType: 'YARD',
+                spotNumber: i + 1,
+                status: this.randomDemoStatus()
+            });
+        }
+
+        // Garage: 10 rows x 10 cols => 100 spots
+        for (let i = 0; i < 100; i++) {
+            demo.push({
+                id: id++,
+                parkingType: 'GARAGE',
+                spotNumber: i + 1,
+                status: this.randomDemoStatus()
+            });
+        }
+
+        return demo;
+    }
+
+    private randomDemoStatus(): string {
+        // Mostly available, some occupied, a tiny fraction as 'my-reservation' for visual variety
+        const r = Math.random();
+        if (r < 0.08) return 'occupied';
+        if (r < 0.10) return 'my-reservation';
+        return 'available';
+    }
+
+    // Mark a small subset of currently available spaces as visually occupied (red)
+    private applyRandomOccupiedDecoration(): void {
+        this.randomDecorations.clear();
+
+        const allAvailable = this.parkingSpaces.filter(s => s.status === 'available');
+        if (!allAvailable || allAvailable.length === 0) return;
+
+        // pick up to ~8% of available spaces, minimum 3, maximum 12
+        const pickCount = Math.min(12, Math.max(3, Math.floor(allAvailable.length * 0.08)));
+        const shuffled = allAvailable.slice();
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        // color palette for random decoration
+        const colors = ['#f44336', '#4caf50', '#ffb300', '#ff5722'];
+
+        for (let i = 0; i < Math.min(pickCount, shuffled.length); i++) {
+            const s = shuffled[i];
+            if (s && s.id) {
+                // assign a random color from palette
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                this.randomDecorations.set(s.id, color);
+            }
+        }
+        this.randomDecorationTimestamp = Date.now();
+        console.log('[Booking] randomDecorations:', Array.from(this.randomDecorations.entries()));
+    }
+
+    // Public method to refresh random decoration from UI (debug helper)
+    refreshRandomDecoration(): void {
+        this.applyRandomOccupiedDecoration();
+    }
+
+    getRandomOccupiedArray(): string[] {
+        // Return debug array like ['12(#f44336)', '45(#4caf50)']
+        return Array.from(this.randomDecorations.entries()).map(([id, color]) => `${id}(${color})`);
+    }
+
+    isRandomDecorated(space: ParkingSpace | null): boolean {
+        if (!space || !space.id) return false;
+        return this.randomDecorations.has(space.id);
+    }
+
+    getRandomColor(space: ParkingSpace | null): string | null {
+        if (!space || !space.id) return null;
+        return this.randomDecorations.get(space.id) || null;
+    }
+
+    private statusOf(space: ParkingSpace | null): string {
+        if (!space || !space.status) return '';
+        return ('' + space.status).toLowerCase();
+    }
+
+    isAvailable(space: ParkingSpace | null): boolean {
+        return this.statusOf(space) === 'available';
+    }
+
+    isMyReservation(space: ParkingSpace | null): boolean {
+        return this.statusOf(space) === 'my-reservation' || this.statusOf(space) === 'my_reservation';
+    }
+
+    isSelected(space: ParkingSpace | null): boolean {
+        if (!space || !space.id) return false;
+        return this.selectedSpotId === space.id;
+    }
+
+    // Decide the UI class for a space with precedence: random-occupied -> selected -> actual status
+    getUiClass(space: ParkingSpace): string {
+        if (!space) return '';
+        // Selected state should override random decoration (user clicked it)
+        if (this.isSelected(space)) return 'space-my-reservation';
+        if (this.isRandomDecorated(space)) return 'space-random';
+        return this.getSpaceClass(space);
+     }
+
+     // Normalize and map status to class (case-insensitive)
+     getSpaceClass(space: ParkingSpace): string {
+         const s = this.statusOf(space);
+         switch (s) {
+             case 'available':
+                 return 'space-available';
+             case 'occupied':
+                 return 'space-occupied';
+             case 'my-reservation':
+             case 'my_reservation':
+                 return 'space-my-reservation';
+             case 'owner-cancelled':
+             case 'owner_cancelled':
+                 return 'space-cancelled';
+             default:
+                 return '';
+         }
+     }
+
+     // Helpers to compute colors for inline styles (ensures template visuals are robust)
+     getBackgroundColor(space: ParkingSpace | null): string {
+         if (!space) return 'transparent';
+        // Selected overrides random decoration
+        if (this.isSelected(space)) return '#1976d2';
+        if (this.isRandomDecorated(space)) {
+            const c = this.getRandomColor(space);
+            if (c) return c;
+        }
+         const s = this.statusOf(space);
+         if (s === 'available') return '#4caf50';
+         if (s === 'occupied') return '#f44336';
+         if (s === 'my-reservation' || s === 'my_reservation') return '#2196f3';
+         if (s === 'owner-cancelled' || s === 'owner_cancelled') return '#9e9e9e';
+         return 'transparent';
+     }
+
+     getBorderColor(space: ParkingSpace | null): string {
+         if (!space) return '#ddd';
+        if (this.isSelected(space)) return '#0d47a1';
+        if (this.isRandomDecorated(space)) {
+            const c = this.getRandomColor(space);
+            // Map random color to a darker border variant
+            const borderMap: { [k: string]: string } = {
+                '#f44336': '#d32f2f',
+                '#4caf50': '#2e7d32',
+                '#ffb300': '#ff8f00',
+                '#ff5722': '#e64a19'
+            };
+            if (c && borderMap[c]) return borderMap[c];
+        }
+         const s = this.statusOf(space);
+         if (s === 'available') return '#45a049';
+         if (s === 'occupied') return '#d32f2f';
+         if (s === 'my-reservation' || s === 'my_reservation') return '#1976d2';
+         return '#757575';
+     }
+
+     getTextColor(space: ParkingSpace | null): string {
+         const bg = this.getBackgroundColor(space);
+         return bg && bg !== 'transparent' ? 'white' : 'inherit';
+     }
+
     formatDate(date: Date): string {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return DateUtils.formatDate(date);
     }
 
     onDateChange(event: any): void {
@@ -96,15 +298,22 @@ export class BookingComponent implements OnInit {
 
     onSpaceClick(space: ParkingSpace): void {
         this.selectedSpace = space;
-
         this.popupError = null;
         this.emailNotificationMessage = null;
-        if (space.status === 'available') {
-            this.showBookingPopup = true;
-        } else if (space.status === 'my-reservation') {
-            this.showCancelPopup = true;
+
+        // allow selection for available spots OR user's own reservations OR random-decorated (visual) spots
+        if (this.isAvailable(space) || this.isMyReservation(space) || this.isRandomDecorated(space)) {
+            // set UI selected state (turn selected spot blue visually)
+            this.selectedSpotId = space.id || null;
+            console.log('[Booking] spot selected', this.selectedSpotId);
+            // if user has a reservation, open cancel popup, otherwise booking popup
+            if (this.isMyReservation(space)) {
+                this.showCancelPopup = true;
+            } else {
+                this.showBookingPopup = true;
+            }
         }
-    }
+     }
 
     confirmBooking(): void {
         if (!this.selectedSpace) return;
@@ -119,33 +328,29 @@ export class BookingComponent implements OnInit {
         this.emailNotificationMessage = null;
 
         this.parkingService.createReservation(request).subscribe({
-            next: (reservation) => {
+            next: () => {
                 this.bookingInProgress = false;
                 this.showBookingPopup = false;
-
-                alert('Parking space booked successfully! (Email notification will be sent)');
-                this.emailNotificationMessage = 'A confirmation email has been sent to your account.';
-                this.loadMyReservations();
-                this.loadParkingSpaces();
-            },
-            error: (error) => {
-              //  this.showBookingPopup = false;
-             //   alert(error.error?.message || 'Failed to book parking space');
-                this.bookingInProgress = false;
-                // prikazi server-provided poruku u popup-u
-                this.popupError = error.error?.message || 'Failed to book parking space';
-            }
-        });
-    }
+                // clear UI selection (actual booking will refresh data)
+                this.selectedSpotId = null;
+                 // show a friendly UI message (backend now sends email notifications)
+                 this.emailNotificationMessage = 'A confirmation email has been sent to your account.';
+                 // refresh lists
+                 this.loadMyReservations();
+                 this.loadParkingSpaces();
+             },
+             error: (error) => {
+                 this.bookingInProgress = false;
+                 // show server-provided message in popup
+                 this.popupError = error.error?.message || 'Failed to book parking space';
+             }
+         });
+     }
 
     confirmCancel(): void {
         if (!this.selectedSpace) return;
 
-        //Pronađite ID rezervacije - kanije u aplikaciji, razviti funkcionalnost da hvata sa bekenda
-        // // Za sada, ovo je način za praćenje ID-ova rezervacija
-        // // alert('Funkcija otkazivanja zahteva ID rezervacije.');
-        // // this.showCancelPopup = false;
-        // // Pronadji rezervaciju za mesto i za izabrani datum
+        // Find the reservation for this space on the selected date
         const reservation = this.myReservations.find(r =>
             r.parkingSpaceId === this.selectedSpace!.id &&
             this.normalizeDate(r.reservationDate) === this.formatDate(this.selectedDate)
@@ -156,29 +361,12 @@ export class BookingComponent implements OnInit {
             this.showCancelPopup = false;
             return;
         }
-        this.cancellingReservation = true;
-        this.popupError = null;
-        this.emailNotificationMessage = null;
 
-
-        this.parkingService.cancelReservation(reservation.id).subscribe({
-            next: () => {
-                this.cancellingReservation = false;
-                this.showCancelPopup = false;
-              //  alert('Reservation cancelled successfully!');
-                this.emailNotificationMessage = 'A cancellation confirmation email has been sent to your account.';
-                this.loadMyReservations();
-                this.loadParkingSpaces();
-            },
-            error: (error) => {
-                this.cancellingReservation = false;
-                this.showCancelPopup = false;
-              //  alert(error.error?.message || 'Failed to cancel reservation');
-                this.popupError = error.error?.message || 'Failed to cancel reservation';
-            }
-        });
+        this.performCancellation(reservation.id);
+        this.showCancelPopup = false;
     }
-    // Otkazi rezervaciju, ,,myReservation" list
+
+    // Cancel reservation from the "My Reservations" list
     cancelReservationFromList(reservation: Reservation): void {
         if (!reservation.id) {
             alert('Invalid reservation');
@@ -186,32 +374,35 @@ export class BookingComponent implements OnInit {
         }
 
         if (confirm(`Are you sure you want to cancel your reservation for spot #${reservation.spotNumber} on ${this.normalizeDate(reservation.reservationDate)}?`)) {
-            this.cancellingReservation = true;
-            this.parkingService.cancelReservation(reservation.id).subscribe({
-                next: () => {
-                    this.cancellingReservation = false;
-                    alert('Reservation cancelled successfully!');
-                    this.loadMyReservations();
-                    this.loadParkingSpaces();
-                },
-                error: (error) => {
-                    this.cancellingReservation = false;
-                    alert(error.error?.message || 'Failed to cancel reservation');
-                }
-            });
+            this.performCancellation(reservation.id);
         }
     }
 
-    // Normalizacija date formata
+    // Common cancellation logic
+    private performCancellation(reservationId: number): void {
+        this.cancellingReservation = true;
+        this.popupError = null;
+        this.emailNotificationMessage = null;
+
+        this.parkingService.cancelReservation(reservationId).subscribe({
+            next: () => {
+                this.cancellingReservation = false;
+                // UI message that email was sent
+                this.emailNotificationMessage = 'A cancellation confirmation email has been sent to your account.';
+                this.loadMyReservations();
+                this.loadParkingSpaces();
+            },
+            error: (error) => {
+                this.cancellingReservation = false;
+                this.popupError = error.error?.message || 'Failed to cancel reservation';
+            }
+        });
+    }
+
+    // Normalize date format to ensure consistent comparison
     normalizeDate(date: string | Date): string {
-        if (date instanceof Date) {
-            return this.formatDate(date);
-        }
-        // Ako je vec string, uveriti se da je format: YYYY-MM-DD
-        const dateObj = new Date(date);
-        return this.formatDate(dateObj);
+        return DateUtils.normalizeDate(date);
     }
-
 
     closePopup(): void {
         this.showBookingPopup = false;
@@ -220,6 +411,7 @@ export class BookingComponent implements OnInit {
         this.popupError = null;
         this.emailNotificationMessage = null;
         this.bookingInProgress = false;
+        this.selectedSpotId = null;
     }
 
     logout(): void {
@@ -227,22 +419,8 @@ export class BookingComponent implements OnInit {
         this.router.navigate(['/login']);
     }
 
-    getSpaceClass(space: ParkingSpace): string {
-        switch (space.status) {
-            case 'available':
-                return 'space-available';
-            case 'occupied':
-                return 'space-occupied';
-            case 'my-reservation':
-                return 'space-my-reservation';
-            case 'owner-cancelled':
-                return 'space-cancelled';
-            default:
-                return '';
-        }
-    }
 
-    // Izgenerisi niz za grid layout
+    // Generate array for grid layout
     getYardRows(): number[] {
         return Array(5).fill(0).map((_, i) => i);
     }
@@ -263,5 +441,11 @@ export class BookingComponent implements OnInit {
         const spotNumber = row * (type === 'YARD' ? 10 : 10) + col + 1;
         const spaces = type === 'YARD' ? this.yardSpaces : this.garageSpaces;
         return spaces.find(s => s.spotNumber === spotNumber) || null;
+    }
+
+    // Helper to get the canonical spot number for a grid cell (used for placeholders)
+    getSpotNumber(type: 'YARD' | 'GARAGE', row: number, col: number): number {
+        const columns = 10; // both grids use 10 columns
+        return row * columns + col + 1;
     }
 }

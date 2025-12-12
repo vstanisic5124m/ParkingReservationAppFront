@@ -391,3 +391,188 @@
     color: #8a1f11;
     border-radius: 4px;
 }
+
+/* Parking table layout and spot button styles */
+.parking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 2rem;
+    table-layout: fixed;
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.parking-table caption {
+    caption-side: top;
+    text-align: left;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.parking-table td.grid-cell {
+    padding: 8px 6px;
+    text-align: center;
+    vertical-align: middle;
+    width: 10%; /* for 10 columns layout; for 5x10 the rows control height */
+    border: 1px solid #eee;
+    height: 72px; /* ensures visible rows */
+}
+
+.space-btn {
+    width: 48px;
+    height: 48px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: transparent;
+    display: block;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    color: inherit;
+}
+
+.space-btn.placeholder {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #e5e7eb;
+    cursor: default;
+    opacity: 1;
+}
+
+.space-empty {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Status variants applied to the button (getSpaceClass) */
+.space-btn.space-available {
+    background-color: #4caf50;
+    color: white;
+    border-color: #45a049;
+}
+
+.space-btn.space-occupied {
+    background-color: #f44336;
+    color: white;
+    border-color: #d32f2f;
+    cursor: not-allowed;
+}
+
+.space-btn.space-my-reservation {
+    background-color: #2196f3;
+    color: white;
+    border-color: #1976d2;
+}
+
+.space-btn.space-cancelled {
+    background-color: #9e9e9e;
+    color: white;
+    border-color: #757575;
+    cursor: not-allowed;
+}
+
+/* Random decorated spots (client-side visual only) */
+.space-btn.space-random {
+    /* background-color set inline via [style.backgroundColor] from component */
+    color: white !important;
+    border-color: transparent !important; /* component sets borderColor inline */
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+.space-btn.space-random span {
+    display: inline-block;
+    line-height: 1;
+}
+
+.space-btn.space-random .star {
+    font-size: 1.1rem;
+}
+
+.space-btn.clickable:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Ensure disabled space buttons aren't dimmed by browser defaults */
+.space-btn[disabled] {
+    opacity: 1 !important;
+    filter: none !important;
+    pointer-events: none;
+}
+
+/* Explicit random-occupied (visual red) marker */
+.space-btn.random-occupied,
+.space-btn.random-occupied[disabled] {
+    background-color: #f44336 !important;
+    color: white !important;
+    border-color: #d32f2f !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+}
+
+/* Explicit UI-selected (blue) marker */
+.space-btn.ui-selected,
+.space-btn.ui-selected[disabled] {
+    background-color: #1976d2 !important; /* blue */
+    color: white !important;
+    border-color: #0d47a1 !important;
+    box-shadow: 0 8px 20px rgba(25,118,210,0.25) !important;
+    transform: scale(1.06);
+    opacity: 1 !important;
+}
+
+/* ensure placeholders remain neutral */
+.space-btn.placeholder[disabled] {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* Wrapper for parking tables layout */
+.parking-tables-wrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.parking-tables-wrapper .parking-table {
+    flex: 1 1 0;
+    max-width: 100%;
+}
+
+.parking-tables-wrapper h3 {
+    margin-top: 0;
+}
+
+@media (max-width: 1000px) {
+    .parking-tables-wrapper {
+        flex-direction: column;
+    }
+}
+
+/* Make tables responsive on small screens */
+@media (max-width: 800px) {
+    .parking-table td.grid-cell {
+        height: 52px;
+    }
+
+    .space-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* Small visual improvement for legend boxes to match button sizes */
+.legend-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+}

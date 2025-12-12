@@ -31,7 +31,9 @@ export class AuthService {
         return this.http.post<JwtResponse>(`${this.apiUrl}/login`, credentials)
             .pipe(
                 tap(response => {
+                    // Store token under the main key and a legacy/alternate key for compatibility
                     localStorage.setItem(this.tokenKey, response.token);
+                    localStorage.setItem('token', response.token);
                     localStorage.setItem(this.userKey, JSON.stringify(response));
                     this.currentUserSubject.next(response);
                 })
@@ -42,7 +44,9 @@ export class AuthService {
         return this.http.post<JwtResponse>(`${this.apiUrl}/register`, userData)
             .pipe(
                 tap(response => {
+                    // Store token under the main key and a legacy/alternate key for compatibility
                     localStorage.setItem(this.tokenKey, response.token);
+                    localStorage.setItem('token', response.token);
                     localStorage.setItem(this.userKey, JSON.stringify(response));
                     this.currentUserSubject.next(response);
                 })
@@ -51,12 +55,22 @@ export class AuthService {
 
     logout(): void {
         localStorage.removeItem(this.tokenKey);
+        localStorage.removeItem('token');
         localStorage.removeItem(this.userKey);
         this.currentUserSubject.next(null);
     }
 
     getToken(): string | null {
-        return localStorage.getItem(this.tokenKey);
+        // Check multiple possible places for the token to be present for backwards compatibility
+        const fromKey = localStorage.getItem(this.tokenKey) || localStorage.getItem('token');
+        if (fromKey) return fromKey;
+
+        // Fallback: token might be embedded in the stored user object
+        const user = this.currentUserValue as any;
+        if (user && user.token) return user.token;
+        if (user && user.accessToken) return user.accessToken;
+
+        return null;
     }
 
     isAuthenticated(): boolean {
