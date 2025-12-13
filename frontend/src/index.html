@@ -6,6 +6,11 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // Runtime configuration for API base URL
+    // Developers can override this when deploying to different environments
+    window.API_BASE_URL = window.API_BASE_URL || 'http://localhost:8080';
+  </script>
 </head>
 <body>
   <app-root></app-root>

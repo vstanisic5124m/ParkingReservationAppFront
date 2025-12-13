@@ -1,9 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ToastService, ToastMessage } from '../../services/toast.service';
 import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-toasts',
+    imports: [CommonModule],
+    standalone: true,
     template: `
     <div class="toasts-wrapper">
         <div *ngFor="let t of toasts" class="toast" [ngClass]="'toast-'+t.type">{{ t.text }}</div>

@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing-module';
-import { App } from './app';
+import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
@@ -18,12 +18,14 @@ import { ToastComponent } from './components/toast/toast.component';
 
 @NgModule({
     declarations: [
-        App,
+        AppComponent,
         LoginComponent,
         RegisterComponent,
         DashboardComponent,
         BookingComponent,
         OwnerComponent,
+        AdminComponent,
+        AdminDashboardComponent,
         DateFormatPipe
     ],
     imports: [
@@ -31,17 +33,16 @@ import { ToastComponent } from './components/toast/toast.component';
         CommonModule,
         AppRoutingModule,
         ReactiveFormsModule,
-        ToastComponent,
-        AdminComponent,
-        AdminDashboardComponent
+        HttpClientModule,
+        ToastComponent
     ],
     providers: [
         provideBrowserGlobalErrorListeners(),
         provideHttpClient(withInterceptorsFromDi()),
         { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
     ],
-    bootstrap: [App]
+    bootstrap: [AppComponent]
 })
-class AppModule { }
+export class AppModule { }
 
 export default AppModule

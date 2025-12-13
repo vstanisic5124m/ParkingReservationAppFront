@@ -14,15 +14,20 @@ export class AuthService {
 
     private currentUserSubject: BehaviorSubject<JwtResponse | null>;
     public currentUser: Observable<JwtResponse | null>;
-    isAdmin: boolean;
+    isAdmin: boolean = false;
 
 
     constructor(private http: HttpClient) {
         const storedUser = localStorage.getItem(this.userKey);
-        this.currentUserSubject = new BehaviorSubject<JwtResponse | null>(
-            storedUser ? JSON.parse(storedUser) : null
-        );
+        const user: JwtResponse | null = storedUser ? JSON.parse(storedUser) : null;
+        this.currentUserSubject = new BehaviorSubject<JwtResponse | null>(user);
         this.currentUser = this.currentUserSubject.asObservable();
+        this.isAdmin = user?.role === 'ADMIN';
+    }
+
+    private setCurrentUser(user: JwtResponse | null): void {
+        this.currentUserSubject.next(user);
+        this.isAdmin = user?.role === 'ADMIN';
     }
 
     public get currentUserValue(): JwtResponse | null {
@@ -37,7 +42,7 @@ export class AuthService {
                     localStorage.setItem(this.tokenKey, response.token);
                     localStorage.setItem('token', response.token);
                     localStorage.setItem(this.userKey, JSON.stringify(response));
-                    this.currentUserSubject.next(response);
+                    this.setCurrentUser(response);
                 })
             );
     }
@@ -50,7 +55,7 @@ export class AuthService {
                     localStorage.setItem(this.tokenKey, response.token);
                     localStorage.setItem('token', response.token);
                     localStorage.setItem(this.userKey, JSON.stringify(response));
-                    this.currentUserSubject.next(response);
+                    this.setCurrentUser(response);
                 })
             );
     }
@@ -59,7 +64,7 @@ export class AuthService {
         localStorage.removeItem(this.tokenKey);
         localStorage.removeItem('token');
         localStorage.removeItem(this.userKey);
-        this.currentUserSubject.next(null);
+        this.setCurrentUser(null);
     }
 
     getToken(): string | null {

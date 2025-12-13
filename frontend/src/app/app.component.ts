@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
     standalone: false,
     styleUrl: './app.css'
 })
-export class App {
+export class AppComponent {
     title = 'Parking Reservation System';
 }

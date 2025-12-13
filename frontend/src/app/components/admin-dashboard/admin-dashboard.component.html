@@ -19,7 +19,7 @@
                 <td>{{ u.username }}</td>
                 <td>{{ u.email || '-' }}</td>
                 <td>
-                    <select [value]="u.role || 'USER'" (change)="onRoleChange(u, $event.target.value)">
+                    <select [value]="u.role || 'USER'" (change)="onRoleChangeEvent(u, $event)">
                         <option value="USER">USER</option>
                         <option value="ADMIN">ADMIN</option>
                     </select>
