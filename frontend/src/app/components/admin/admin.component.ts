@@ -11,7 +11,8 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'app-admin',
     templateUrl: './admin.component.html',
-    styleUrls: ['./admin.component.css']
+    styleUrls: ['./admin.component.css'],
+    standalone: false
 })
 export class AdminComponent implements AfterViewInit, OnDestroy {
     // Users table (simple array wrapper to avoid Angular Material dependency)
@@ -24,7 +25,7 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
     usersSearch = new FormControl('');
 
     // Reservations table
-    reservationsDataSource: { data: Reservation[] } = { data: [] };
+    reservationsDataSource: { data: any[] } = { data: [] };
     reservationsDisplayedColumns = ['id', 'userEmail', 'spot', 'start', 'end', 'actions'];
     reservationsTotal = 0;
     reservationsPageSize = 10;

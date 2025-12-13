@@ -4,6 +4,17 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { LoginRequest, RegisterRequest, JwtResponse } from '../models/user.model';
 
+export interface CurrentUser {
+    token: string;
+    type: string;
+    userId: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    ownedParkingSpaceId?: number;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -12,20 +23,25 @@ export class AuthService {
     private tokenKey = 'auth_token';
     private userKey = 'current_user';
 
-    private currentUserSubject: BehaviorSubject<JwtResponse | null>;
-    public currentUser: Observable<JwtResponse | null>;
-    isAdmin: boolean;
+    private currentUserSubject: BehaviorSubject<CurrentUser | null>;
+    public currentUser: Observable<CurrentUser | null>;
+    isAdmin: boolean = false;
 
 
     constructor(private http: HttpClient) {
         const storedUser = localStorage.getItem(this.userKey);
-        this.currentUserSubject = new BehaviorSubject<JwtResponse | null>(
-            storedUser ? JSON.parse(storedUser) : null
-        );
+        const user: CurrentUser | null = storedUser ? JSON.parse(storedUser) : null;
+        this.currentUserSubject = new BehaviorSubject<CurrentUser | null>(user);
         this.currentUser = this.currentUserSubject.asObservable();
+        this.isAdmin = user?.role === 'ADMIN';
     }
 
-    public get currentUserValue(): JwtResponse | null {
+    private setCurrentUser(user: CurrentUser | null): void {
+        this.currentUserSubject.next(user);
+        this.isAdmin = user?.role === 'ADMIN';
+    }
+
+    public get currentUserValue(): CurrentUser | null {
         return this.currentUserSubject.value;
     }
 
@@ -37,7 +53,7 @@ export class AuthService {
                     localStorage.setItem(this.tokenKey, response.token);
                     localStorage.setItem('token', response.token);
                     localStorage.setItem(this.userKey, JSON.stringify(response));
-                    this.currentUserSubject.next(response);
+                    this.setCurrentUser(response);
                 })
             );
     }
@@ -50,7 +66,7 @@ export class AuthService {
                     localStorage.setItem(this.tokenKey, response.token);
                     localStorage.setItem('token', response.token);
                     localStorage.setItem(this.userKey, JSON.stringify(response));
-                    this.currentUserSubject.next(response);
+                    this.setCurrentUser(response);
                 })
             );
     }
@@ -59,7 +75,7 @@ export class AuthService {
         localStorage.removeItem(this.tokenKey);
         localStorage.removeItem('token');
         localStorage.removeItem(this.userKey);
-        this.currentUserSubject.next(null);
+        this.setCurrentUser(null);
     }
 
     getToken(): string | null {

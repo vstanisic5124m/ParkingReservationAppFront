@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+
+declare global {
+    interface Window {
+        API_BASE_URL?: string;
+    }
+}
 
 export interface User {
     id: string;
@@ -26,7 +31,7 @@ export interface Reservation {
     providedIn: 'root'
 })
 export class AdminService {
-    private baseUrl = environment.apiUrl || '';
+    private baseUrl: string = (typeof window !== 'undefined' && window.API_BASE_URL) || '';
 
     constructor(private http: HttpClient) {}
 
