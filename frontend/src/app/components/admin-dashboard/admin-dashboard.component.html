@@ -1,0 +1,71 @@
+<div class="admin-dashboard" *ngIf="isAdmin(); else notAllowed">
+    <h2>Admin Dashboard</h2>
+
+    <section class="users-section">
+        <h3>All Users</h3>
+        <div *ngIf="loadingUsers">Loading users...</div>
+        <table *ngIf="!loadingUsers">
+            <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Parking</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let u of users">
+                <td>{{ u.username }}</td>
+                <td>{{ u.email || '-' }}</td>
+                <td>
+                    <select [value]="u.role || 'USER'" (change)="onRoleChange(u, $event.target.value)">
+                        <option value="USER">USER</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select>
+                    <span *ngIf="savingRoleUserId === u.id">saving...</span>
+                </td>
+                <td>{{ u.parkingId || '—' }}</td>
+                <td>
+                    <button (click)="revokeParking(u)" [disabled]="!u.parkingId || revokingParkingId === u.parkingId">
+                        {{ revokingParkingId === u.parkingId ? 'revoking...' : 'Revoke parking' }}
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="reservations-section">
+        <h3>All Reservations</h3>
+        <div *ngIf="loadingReservations">Loading reservations...</div>
+        <table *ngIf="!loadingReservations">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>User ID</th>
+                <th>Parking ID</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let r of reservations">
+                <td>{{ r.id }}</td>
+                <td>{{ r.userId }}</td>
+                <td>{{ r.parkingId }}</td>
+                <td>{{ r.startTime }}</td>
+                <td>{{ r.endTime }}</td>
+                <td>{{ r.status || '-' }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<ng-template #notAllowed>
+    <div class="not-authorized">
+        <p>You are not authorized to view the admin dashboard.</p>
+    </div>
+</ng-template>

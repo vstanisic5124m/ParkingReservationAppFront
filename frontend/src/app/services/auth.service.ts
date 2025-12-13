@@ -14,6 +14,8 @@ export class AuthService {
 
     private currentUserSubject: BehaviorSubject<JwtResponse | null>;
     public currentUser: Observable<JwtResponse | null>;
+    isAdmin: boolean;
+
 
     constructor(private http: HttpClient) {
         const storedUser = localStorage.getItem(this.userKey);
