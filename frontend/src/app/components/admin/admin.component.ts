@@ -8,6 +8,14 @@ import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 
+interface AdminReservation {
+    id: number;
+    userEmail: string;
+    spot: number;
+    start: string;
+    end: string;
+}
+
 @Component({
     selector: 'app-admin',
     templateUrl: './admin.component.html',
@@ -25,7 +33,7 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
     usersSearch = new FormControl('');
 
     // Reservations table
-    reservationsDataSource: { data: any[] } = { data: [] };
+    reservationsDataSource: { data: AdminReservation[] } = { data: [] };
     reservationsDisplayedColumns = ['id', 'userEmail', 'spot', 'start', 'end', 'actions'];
     reservationsTotal = 0;
     reservationsPageSize = 10;
@@ -165,9 +173,9 @@ export class AdminComponent implements AfterViewInit, OnDestroy {
          });
     }
 
-    onCancelReservation(r: Reservation): void {
+    onCancelReservation(r: AdminReservation): void {
         if (!confirm(`Cancel reservation ${r.id}?`)) return;
-        this.adminService.cancelReservation(r.id!).pipe(takeUntil(this.destroy$)).subscribe({
+        this.adminService.cancelReservation(r.id).pipe(takeUntil(this.destroy$)).subscribe({
              next: () => {
                 this.toast.success('Reservation cancelled');
                  this.loadReservations();

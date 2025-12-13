@@ -4,17 +4,6 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { LoginRequest, RegisterRequest, JwtResponse } from '../models/user.model';
 
-export interface CurrentUser {
-    token: string;
-    type: string;
-    userId: number;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: string;
-    ownedParkingSpaceId?: number;
-}
-
 @Injectable({
     providedIn: 'root'
 })
@@ -23,25 +12,25 @@ export class AuthService {
     private tokenKey = 'auth_token';
     private userKey = 'current_user';
 
-    private currentUserSubject: BehaviorSubject<CurrentUser | null>;
-    public currentUser: Observable<CurrentUser | null>;
+    private currentUserSubject: BehaviorSubject<JwtResponse | null>;
+    public currentUser: Observable<JwtResponse | null>;
     isAdmin: boolean = false;
 
 
     constructor(private http: HttpClient) {
         const storedUser = localStorage.getItem(this.userKey);
-        const user: CurrentUser | null = storedUser ? JSON.parse(storedUser) : null;
-        this.currentUserSubject = new BehaviorSubject<CurrentUser | null>(user);
+        const user: JwtResponse | null = storedUser ? JSON.parse(storedUser) : null;
+        this.currentUserSubject = new BehaviorSubject<JwtResponse | null>(user);
         this.currentUser = this.currentUserSubject.asObservable();
         this.isAdmin = user?.role === 'ADMIN';
     }
 
-    private setCurrentUser(user: CurrentUser | null): void {
+    private setCurrentUser(user: JwtResponse | null): void {
         this.currentUserSubject.next(user);
         this.isAdmin = user?.role === 'ADMIN';
     }
 
-    public get currentUserValue(): CurrentUser | null {
+    public get currentUserValue(): JwtResponse | null {
         return this.currentUserSubject.value;
     }
 
