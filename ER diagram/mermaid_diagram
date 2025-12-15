@@ -1,0 +1,63 @@
+erDiagram
+    USERS {
+        BIGSERIAL id PK
+        VARCHAR email UNIQUE
+        VARCHAR password_hash
+        VARCHAR first_name
+        VARCHAR last_name
+        VARCHAR phone_number
+        VARCHAR role
+        BIGINT owned_parking_space_id FK
+        BOOLEAN is_active
+        BOOLEAN is_owner
+        INTEGER rating
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    ADMINS {
+        BIGSERIAL id PK
+        VARCHAR email UNIQUE
+        VARCHAR password_hash
+        VARCHAR first_name
+        VARCHAR last_name
+        VARCHAR phone_number
+        BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    PARKING_SPACES {
+        BIGSERIAL id PK
+        VARCHAR parking_type
+        INTEGER spot_number
+        BOOLEAN is_active
+    }
+
+    RESERVATIONS {
+        BIGSERIAL id PK
+        BIGINT user_id FK
+        BIGINT parking_space_id FK
+        DATE reservation_date
+        VARCHAR status
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+        BIGINT version
+    }
+
+    OWNER_CANCELLATIONS {
+        BIGSERIAL id PK
+        BIGINT owner_id FK
+        BIGINT parking_space_id FK
+        DATE cancellation_date
+        VARCHAR reason
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    USERS ||--o{ RESERVATIONS : "makes"
+    PARKING_SPACES ||--o{ RESERVATIONS : "has"
+    USERS ||--o{ OWNER_CANCELLATIONS : "issues"
+    PARKING_SPACES ||--o{ OWNER_CANCELLATIONS : "affected_by"
+    USERS ||--|| PARKING_SPACES : "may_own (owned_parking_space_id)"
+    ADMINS : "administrators (separate table)"
