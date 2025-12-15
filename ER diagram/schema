@@ -1,0 +1,83 @@
+USER {
+        int id PK
+        string username
+        string email
+        string role
+        string firstName
+        string lastName
+        string phoneNumber
+        string parkingId FK
+    }
+
+    RESERVATION {
+        int id PK
+        int userId FK
+        int parkingId FK
+        datetime startTime
+        datetime endTime
+        string status
+    }
+
+    PARKING {
+        int id PK
+        string name
+        int ownerId FK
+        int totalSpots
+        string location
+    }
+
+    ROLE {
+        int id PK
+        string name
+    }
+
+    USER ||--o{ RESERVATION : "makes"
+    PARKING ||--o{ RESERVATION : "has"
+    USER }|..|{ PARKING : "owns" 
+    ROLE ||--o{ USER : "assigned_to"
+
+
+@startuml
+entity "User" as User {
+  * id : INT <<PK>>
+  --
+  username : VARCHAR
+  email : VARCHAR
+  role : VARCHAR
+  firstName : VARCHAR
+  lastName : VARCHAR
+  phoneNumber : VARCHAR
+  parkingId : INT <<FK?>>
+}
+
+entity "Reservation" as Reservation {
+  * id : INT <<PK>>
+  --
+  userId : INT <<FK>>
+  parkingId : INT <<FK>>
+  startTime : TIMESTAMP
+  endTime : TIMESTAMP
+  status : VARCHAR
+}
+
+entity "Parking" as Parking {
+  * id : INT <<PK>>
+  --
+  name : VARCHAR
+  ownerId : INT <<FK>>
+  totalSpots : INT
+  location : VARCHAR
+}
+
+entity "Role" as Role {
+  * id : INT <<PK>>
+  --
+  name : VARCHAR
+}
+
+User ||--o{ Reservation : "makes"
+Parking ||--o{ Reservation : "has"
+User }|..|{ Parking : "owns"
+Role ||--o{ User : "assigned_to"
+@enduml
+
