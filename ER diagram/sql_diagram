@@ -1,0 +1,105 @@
+-- Enums stored as varchar (entity enums are persisted as STRING)
+-- Allowed values (for reference):
+-- UserRole: 'NON_OWNER','OWNER','ADMIN'
+-- ParkingType: 'YARD','GARAGE'
+-- ReservationStatus: 'ACTIVE','CANCELLED','COMPLETED'
+
+-- USERS table (from com.parkingshare.auth.entity.User)
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,            -- unique user identifier
+    password_hash TEXT NOT NULL,                   -- stored bcrypt hash
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(20),
+    role VARCHAR(20) NOT NULL DEFAULT 'NON_OWNER', -- user role (enum as text)
+    owned_parking_space_id BIGINT,                 -- FK to parking_spaces.id (nullable)
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    is_owner BOOLEAN NOT NULL DEFAULT false,
+    rating INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
+
+-- Parking spaces
+CREATE TABLE parking_spaces (
+    id BIGSERIAL PRIMARY KEY,
+    parking_type VARCHAR(20) NOT NULL, -- 'YARD' or 'GARAGE'
+    spot_number INTEGER NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT true
+);
+
+-- FK from users.owned_parking_space_id -> parking_spaces.id
+ALTER TABLE users
+    ADD CONSTRAINT fk_users_owned_parking_space
+    FOREIGN KEY (owned_parking_space_id) REFERENCES parking_spaces(id)
+    ON DELETE SET NULL;
+
+-- RESERVATIONS table (from com.parkingshare.auth.entity.Reservation)
+CREATE TABLE reservations (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    parking_space_id BIGINT NOT NULL,
+    reservation_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE', -- ReservationStatus enum string
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    version BIGINT, -- @Version optimistic locking column
+    -- Unique constraint: only one reservation per parking_space per date
+    CONSTRAINT uq_parkingspace_date UNIQUE (parking_space_id, reservation_date)
+);
+
+-- Foreign keys for reservations
+ALTER TABLE reservations
+    ADD CONSTRAINT fk_reservations_user
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE;
+
+ALTER TABLE reservations
+    ADD CONSTRAINT fk_reservations_parking_space
+    FOREIGN KEY (parking_space_id) REFERENCES parking_spaces(id)
+    ON DELETE CASCADE;
+
+-- ADMINISTRATORS table (separate Admin entity)
+CREATE TABLE admins (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(20),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
+
+-- OWNER_CANCELLATIONS (inferred; code references OwnerCancellationRepo)
+-- This table logs when an owner cancels availability for a parking space on a date.
+CREATE TABLE owner_cancellations (
+    id BIGSERIAL PRIMARY KEY,
+    owner_id BIGINT NOT NULL,          -- user who is owner performing cancellation
+    parking_space_id BIGINT NOT NULL,
+    cancellation_date DATE NOT NULL,
+    reason TEXT,                       -- optional reason
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
+
+ALTER TABLE owner_cancellations
+    ADD CONSTRAINT fk_owner_cancellations_owner
+    FOREIGN KEY (owner_id) REFERENCES users(id)
+    ON DELETE CASCADE;
+
+ALTER TABLE owner_cancellations
+    ADD CONSTRAINT fk_owner_cancellations_parking_space
+    FOREIGN KEY (parking_space_id) REFERENCES parking_spaces(id)
+    ON DELETE CASCADE;
+
+-- Optional/Helpful indexes
+CREATE INDEX idx_reservations_date ON reservations (reservation_date);
+CREATE INDEX idx_parking_spot ON parking_spaces (spot_number, parking_type);
+
+-- Notes:
+-- - The entities persist enums as strings, so columns are VARCHAR(xx).
+-- - created_at and updated_at columns mirror the entity default values and @PreUpdate behavior.
+-- - reservations.version is used for optimistic locking: update queries will check version to avoid concurrent double-booking.
